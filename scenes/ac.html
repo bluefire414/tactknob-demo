@@ -158,50 +158,74 @@
     /* ── Sensitivity panel ── */
     #sensitivity-panel {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(0, 0, 0, 0.72);
+      bottom: 16px;
+      left: 16px;
+      background: rgba(0, 0, 0, 0.78);
       color: #fff;
-      padding: 8px 12px 10px;
-      border-radius: 10px;
+      padding: 12px;
+      border-radius: 12px;
       z-index: 10000;
       pointer-events: auto;
       user-select: none;
-      min-width: 140px;
+      min-width: 180px;
     }
 
-    #sensitivity-panel label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 6px;
-      letter-spacing: 0.04em;
-    }
-
-    #sensitivity-val {
-      color: #fff;
+    .sens-title {
+      font-size: 13px;
       font-weight: 700;
-      font-family: 'SF Mono', 'Menlo', monospace;
+      color: #fff;
+      margin-bottom: 2px;
     }
 
-    #sensitivity-slider {
-      width: 100%;
-      accent-color: #1D9E75;
+    .sens-subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 10px;
+    }
+
+    .sens-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .sens-btn {
+      min-height: 44px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.65);
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
+      touch-action: manipulation;
+      transition: background 0.1s, color 0.1s, border-color 0.1s;
+    }
+
+    .sens-btn.active {
+      background: #fff;
+      color: #1C1C1E;
+      border-color: #fff;
     }
 
     /* ── Circle fit status ── */
     #fit-status {
       font-size: 10px;
-      color: rgba(255,255,255,0.5);
-      margin-top: 5px;
+      color: rgba(255,255,255,0.45);
+      margin-top: 2px;
       text-align: center;
       font-family: 'SF Mono', 'Menlo', monospace;
     }
     #fit-status.ready { color: #1D9E75; }
+
+    #sample-stats {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      font-family: 'SF Mono', 'Menlo', monospace;
+      min-height: 14px;
+    }
   </style>
 </head>
 <body>
@@ -300,8 +324,16 @@
 
   <!-- Sensitivity panel -->
   <div id="sensitivity-panel">
-    <label>靈敏度 <span id="sensitivity-val">2.50</span></label>
-    <input id="sensitivity-slider" type="range" min="0.5" max="5.0" step="0.1" value="2.5">
+    <div class="sens-title">靈敏度</div>
+    <div class="sens-subtitle" id="sens-subtitle">轉一圈 ≈ --°C</div>
+    <div class="sens-grid">
+      <button class="sens-btn" data-val="0.5">0.5</button>
+      <button class="sens-btn" data-val="1.0">1.0</button>
+      <button class="sens-btn" data-val="1.5">1.5</button>
+      <button class="sens-btn" data-val="2.0">2.0</button>
+      <button class="sens-btn" data-val="3.0">3.0</button>
+      <button class="sens-btn" data-val="5.0">5.0</button>
+    </div>
     <div id="fit-status">等待旋轉...</div>
     <div id="sample-stats"></div>
   </div>
@@ -422,7 +454,7 @@
     const fitStatus   = document.getElementById('fit-status');
     const sampleStats = document.getElementById('sample-stats');
 
-    let SENSITIVITY = 2.5;
+    let SENSITIVITY = 2.0;
 
     let gesture = {
       active: false, pointerId: null, targetKnob: null, name: '',
@@ -549,11 +581,29 @@
     document.addEventListener('touchend',    () => gestureEnd('touch'));
     document.addEventListener('touchcancel', () => gestureEnd('touch'));
 
-    // ── Sensitivity slider ────────────────────────────────────────────────────
-    document.getElementById('sensitivity-slider').addEventListener('input', function () {
-      SENSITIVITY = parseFloat(this.value);
-      document.getElementById('sensitivity-val').textContent = SENSITIVITY.toFixed(2);
+    // ── Sensitivity buttons ───────────────────────────────────────────────────
+    function updateSensitivityUI() {
+      const deg = Math.round(14 * SENSITIVITY);
+      document.getElementById('sens-subtitle').textContent = `轉一圈 ≈ ${deg}°C`;
+      document.querySelectorAll('.sens-btn').forEach(btn => {
+        btn.classList.toggle('active', parseFloat(btn.dataset.val) === SENSITIVITY);
+      });
+    }
+
+    document.querySelectorAll('.sens-btn').forEach(btn => {
+      btn.addEventListener('pointerdown', e => {
+        e.stopPropagation();
+        SENSITIVITY = parseFloat(btn.dataset.val);
+        updateSensitivityUI();
+      });
     });
+
+    // Prevent panel touches from triggering gesture tracking
+    const panel = document.getElementById('sensitivity-panel');
+    panel.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false });
+    panel.addEventListener('mousedown',   e => e.stopPropagation());
+
+    updateSensitivityUI();
 
     // ── Simulate ambient temp drift ────────────────────────────────────────────
     let ambientBase = 26;
