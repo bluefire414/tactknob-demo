@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>抽油煙機 — TactKnob</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { min-height: 100dvh; }
+
+    /* ── Hood visual ── */
+    .hood-visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      gap: 8px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hood-icon {
+      font-size: 52px;
+      line-height: 1;
+      transition: filter 0.3s;
+    }
+    .hood-icon.on { filter: drop-shadow(0 0 8px rgba(29,158,117,0.5)); }
+
+    .hood-indicators {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .indicator-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    /* ── Brightness preview ── */
+    .light-preview {
+      width: 48px;
+      height: 12px;
+      border-radius: 6px;
+      background: var(--border);
+      transition: background 0.2s;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Timer display ── */
+    .timer-display {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.04em;
+    }
+    .timer-display.active { color: var(--accent); }
+
+    .timer-sub {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-top: 2px;
+    }
+
+    /* ── Speed badge ── */
+    .speed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-2);
+      transition: all 0.2s;
+    }
+    .speed-badge.speed-1 { border-color: #4CAF50; color: #4CAF50; background: rgba(76,175,80,.06); }
+    .speed-badge.speed-2 { border-color: #FF9800; color: #FF9800; background: rgba(255,152,0,.06); }
+    .speed-badge.speed-3 { border-color: var(--danger); color: var(--danger); background: rgba(232,64,64,.06); }
+
+    /* ── Knob pair ── */
+    .knob-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .knob-pair .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Timer slider card ── */
+    .timer-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-card .timer-display { text-align: center; }
+
+    /* ── Filter alert ── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--radius-btn);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+    }
+    .filter-bar.warn {
+      border-color: #F5A623;
+      background: rgba(245,166,35,0.06);
+    }
+    .filter-bar-text { flex: 1; font-weight: 500; }
+    .filter-bar-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a href="../index.html">← 返回</a>
+    <h1>抽油煙機</h1>
+    <div class="ac-status">
+      <span class="led" id="hoodLed"></span>
+      <span id="hoodStatusText">待機</span>
+    </div>
+  </header>
+
+  <!-- Hood visual status -->
+  <div class="hood-visual">
+    <div class="hood-icon" id="hoodIcon">🍳</div>
+    <div class="hood-indicators">
+      <div class="indicator-item">
+        <span class="led" id="fanLed"></span>
+        <span id="fanStatus">風扇關閉</span>
+      </div>
+      <div class="indicator-item">
+        <div class="light-preview" id="lightPreview"></div>
+        <span id="lightStatus">燈光關閉</span>
+      </div>
+    </div>
+    <div class="speed-badge" id="speedBadge">– 待機 –</div>
+  </div>
+
+  <div class="scene-body">
+
+    <!-- Fan + Brightness knobs -->
+    <div class="knob-pair">
+      <div class="card" style="align-items:center;">
+        <div class="section-label">風速</div>
+        <div id="knobFan"></div>
+      </div>
+      <div class="card" style="align-items:center;">
+        <div class="section-label">照明</div>
+        <div id="knobLight"></div>
+      </div>
+    </div>
+
+    <!-- Delay-off timer -->
+    <div class="card timer-card">
+      <div class="section-label">延遲關閉</div>
+      <div class="timer-display" id="timerDisplay">關閉</div>
+      <div class="timer-sub" id="timerSub">烹飪結束後自動關機</div>
+      <div id="sliderTimer" style="width:100%;"></div>
+    </div>
+
+    <!-- Filter status -->
+    <div class="filter-bar" id="filterBar">
+      <span style="font-size:20px;">🔧</span>
+      <div>
+        <div class="filter-bar-text">濾網狀態</div>
+        <div class="filter-bar-sub" id="filterStatus">良好 — 上次清洗 14 天前</div>
+      </div>
+      <span class="led" id="filterLed" style="flex-shrink:0;"></span>
+    </div>
+
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/knob.js"></script>
+  <script src="../js/slider.js"></script>
+  <script>
+    // ── Fan speed knob (0=off, 1=低, 2=中, 3=高) ───────────────────────────────
+    const FAN_LABELS   = ['關', '低速', '中速', '高速'];
+    const FAN_COLORS   = ['#E0DED8', '#4CAF50', '#FF9800', '#E53935'];
+    const SPEED_LABELS = ['– 待機 –', '低速運轉', '中速運轉', '高速運轉'];
+    const SPEED_CLASS  = ['', 'speed-1', 'speed-2', 'speed-3'];
+
+    const fanKnob = new TactKnob('#knobFan', {
+      min: 0, max: 3, value: 0, step: 1,
+      label: '風速', unit: '',
+      angleMin: -135, angleMax: 135,
+      offValue: 0,
+      formatValue: v => FAN_LABELS[Math.round(v)],
+      onChange: updateFan
+    });
+
+    function updateFan(val) {
+      const step = Math.round(val);
+      const on = step > 0;
+
+      // LED
+      const led = document.getElementById('fanLed');
+      led.className = on ? 'led on' : 'led';
+      document.getElementById('fanStatus').textContent =
+        on ? `風扇 ${FAN_LABELS[step]}` : '風扇關閉';
+
+      // Speed badge
+      const badge = document.getElementById('speedBadge');
+      badge.textContent = SPEED_LABELS[step];
+      badge.className = 'speed-badge ' + SPEED_CLASS[step];
+
+      // Hood icon
+      const icon = document.getElementById('hoodIcon');
+      icon.classList.toggle('on', on);
+      icon.textContent = on ? '💨' : '🍳';
+
+      updateHeader();
+    }
+
+    // ── Light brightness knob (0–100%) ────────────────────────────────────────
+    const lightKnob = new TactKnob('#knobLight', {
+      min: 0, max: 100, value: 0, step: 5,
+      label: '照明', unit: '%',
+      angleMin: -135, angleMax: 135,
+      offValue: 0,
+      onChange: updateLight
+    });
+
+    function updateLight(val) {
+      const on = val > 0;
+      const pct = val / 100;
+
+      // Light preview bar
+      const preview = document.getElementById('lightPreview');
+      if (on) {
+        const l = Math.round(80 + pct * 175); // 80–255
+        preview.style.background = `rgb(${l},${Math.round(l*0.98)},${Math.round(l*0.7)})`;
+      } else {
+        preview.style.background = 'var(--border)';
+      }
+
+      document.getElementById('lightStatus').textContent =
+        on ? `亮度 ${Math.round(val)}%` : '燈光關閉';
+
+      updateHeader();
+    }
+
+    // ── Delay-off slider ───────────────────────────────────────────────────────
+    const TIMER_OPTS = [0, 5, 10, 15];
+
+    const timerSlider = new TactSlider('#sliderTimer', {
+      min: 0, max: 3, value: 0, step: 1,
+      steps: ['關', '5分', '10分', '15分'],
+      formatValue: v => '',
+      onChange: updateTimer
+    });
+
+    function updateTimer(idx) {
+      const mins = TIMER_OPTS[Math.round(idx)];
+      const disp = document.getElementById('timerDisplay');
+      const sub  = document.getElementById('timerSub');
+
+      if (mins === 0) {
+        disp.textContent = '關閉';
+        disp.classList.remove('active');
+        sub.textContent = '烹飪結束後自動關機';
+      } else {
+        disp.textContent = `${mins} 分鐘`;
+        disp.classList.add('active');
+        sub.textContent = `抽風機將在 ${mins} 分鐘後自動關閉`;
+      }
+    }
+
+    // ── Header status ──────────────────────────────────────────────────────────
+    function updateHeader() {
+      const fanOn   = Math.round(fanKnob.value) > 0;
+      const lightOn = lightKnob.value > 0;
+      const anyOn   = fanOn || lightOn;
+
+      const led  = document.getElementById('hoodLed');
+      const text = document.getElementById('hoodStatusText');
+      led.className = anyOn ? 'led on' : 'led';
+
+      if (fanOn && lightOn) text.textContent = '運轉中 + 照明';
+      else if (fanOn)       text.textContent = '抽風運轉中';
+      else if (lightOn)     text.textContent = '照明開啟';
+      else                  text.textContent = '待機';
+    }
+
+    // ── Filter status (static demo) ────────────────────────────────────────────
+    const filterDays = 14;
+    const needsClean = filterDays > 30;
+    const filterBar  = document.getElementById('filterBar');
+    const filterLed  = document.getElementById('filterLed');
+
+    if (needsClean) {
+      filterBar.classList.add('warn');
+      filterLed.className = 'led warn';
+      document.getElementById('filterStatus').textContent = '需要清洗 — 建議本週處理';
+    } else {
+      filterLed.className = 'led on';
+    }
+  </script>
+</body>
+</html>

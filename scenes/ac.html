@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>車載空調 — TactKnob</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { min-height: 100dvh; touch-action: none; }
+
+
+    /* ── Ambient temp display ── */
+    .ambient-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .ambient-bar strong { color: var(--text); font-weight: 700; }
+
+    /* ── Dual knob row ── */
+    .dual-knobs {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      align-items: center;
+    }
+
+    .zone-knob {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .zone-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Sync button center ── */
+    .sync-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+    }
+
+    .sync-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all 0.15s;
+      background: var(--surface);
+    }
+    .sync-icon.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .sync-icon svg { width: 16px; height: 16px; }
+    .sync-icon.active svg path { stroke: #fff; }
+    .sync-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+
+    /* ── Fan speed ── */
+    .fan-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .fan-icon { font-size: 20px; color: var(--text-2); }
+    .fan-slider-wrap { flex: 1; }
+
+    /* ── Fan speed dots ── */
+    .fan-dots {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+    .fan-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.15s;
+    }
+    .fan-dot.active { background: var(--accent); }
+
+    /* ── Mode buttons ── */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .mode-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-btn);
+      background: var(--surface);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all 0.15s;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .mode-btn .mode-ico { font-size: 22px; line-height: 1; }
+    .mode-btn.active {
+      border-color: var(--accent);
+      background: rgba(29,158,117,0.08);
+      color: var(--accent);
+    }
+
+    /* ── Bottom toggles ── */
+    .bottom-row {
+      display: flex;
+      gap: 8px;
+    }
+    .bottom-row .toggle-btn { flex: 1; justify-content: center; }
+
+    /* ── AC status indicator ── */
+    .ac-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+
+    /* ── Sensitivity panel ── */
+    #sensitivity-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      padding: 8px 12px 10px;
+      border-radius: 10px;
+      z-index: 10000;
+      pointer-events: auto;
+      user-select: none;
+      min-width: 140px;
+    }
+
+    #sensitivity-panel label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    #sensitivity-val {
+      color: #fff;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Menlo', monospace;
+    }
+
+    #sensitivity-slider {
+      width: 100%;
+      accent-color: #1D9E75;
+      cursor: pointer;
+    }
+
+    /* ── Circle fit status ── */
+    #fit-status {
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 5px;
+      text-align: center;
+      font-family: 'SF Mono', 'Menlo', monospace;
+    }
+    #fit-status.ready { color: #1D9E75; }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a href="../index.html">← 返回</a>
+    <h1>車載空調</h1>
+    <div class="ac-status">
+      <span class="led" id="acLed"></span>
+      <span id="acStatusText">OFF</span>
+    </div>
+  </header>
+
+  <!-- Ambient temperature bar -->
+  <div class="ambient-bar">
+    <span>車內溫度</span>
+    <strong id="ambientTemp">26°C</strong>
+    <span>環境溫</span>
+  </div>
+
+  <div class="scene-body">
+
+    <!-- Dual zone temperature knobs -->
+    <div class="card">
+      <div class="section-label">溫度控制</div>
+      <div class="dual-knobs">
+        <!-- Driver -->
+        <div class="zone-knob">
+          <div class="zone-badge">駕駛</div>
+          <div id="knobDriver"></div>
+        </div>
+
+        <!-- Sync button -->
+        <div class="sync-col">
+          <div class="sync-icon" id="syncBtn" title="同步兩側溫度">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M8 12h8M14 9l3 3-3 3" stroke="#6E6E73" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 12h-8M10 15l-3-3 3-3" stroke="#6E6E73" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="sync-label">SYNC</div>
+        </div>
+
+        <!-- Passenger -->
+        <div class="zone-knob">
+          <div class="zone-badge">副駕</div>
+          <div id="knobPassenger"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fan speed -->
+    <div class="card">
+      <div class="section-label">風速</div>
+      <div class="fan-row">
+        <span class="fan-icon">🌬</span>
+        <div class="fan-slider-wrap">
+          <div id="sliderFan"></div>
+          <div class="fan-dots" id="fanDots"></div>
+        </div>
+        <span class="fan-icon">💨</span>
+      </div>
+    </div>
+
+    <!-- Air mode -->
+    <div class="card">
+      <div class="section-label">出風模式</div>
+      <div class="mode-grid">
+        <button class="mode-btn active" data-mode="face">
+          <span class="mode-ico">😊</span>臉部
+        </button>
+        <button class="mode-btn" data-mode="feet">
+          <span class="mode-ico">🦶</span>腳部
+        </button>
+        <button class="mode-btn" data-mode="defrost">
+          <span class="mode-ico">❄️</span>除霜
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom controls -->
+    <div class="bottom-row">
+      <button class="toggle-btn" id="acBtn">
+        <span>❄️</span> A/C
+      </button>
+      <button class="toggle-btn" id="autoBtn">
+        <span>🔄</span> AUTO
+      </button>
+      <button class="toggle-btn" id="recirc">
+        <span>♻️</span> 內循環
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Sensitivity panel -->
+  <div id="sensitivity-panel">
+    <label>靈敏度 <span id="sensitivity-val">1.00</span></label>
+    <input id="sensitivity-slider" type="range" min="0.1" max="1.0" step="0.05" value="1.0">
+    <div id="fit-status">等待旋轉...</div>
+    <div id="sample-stats"></div>
+  </div>
+
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/knob.js"></script>
+  <script src="../js/slider.js"></script>
+  <script>
+    // ── State ──────────────────────────────────────────────────────────────────
+    let syncMode = false;
+    let acOn = false;
+    let autoOn = false;
+    let recircOn = false;
+    let currentMode = 'face';
+    const FAN_MAX = 7;
+
+    // ── Knobs ──────────────────────────────────────────────────────────────────
+    const driverKnob = new TactKnob('#knobDriver', {
+      min: 16, max: 30, value: 22, step: 0.5,
+      label: '', unit: '°C',
+      formatValue: v => v.toFixed(1),
+      onChange(val) {
+        if (syncMode) passengerKnob.setValue(val, true);
+        updateStatus();
+      }
+    });
+
+    const passengerKnob = new TactKnob('#knobPassenger', {
+      min: 16, max: 30, value: 22, step: 0.5,
+      label: '', unit: '°C',
+      formatValue: v => v.toFixed(1),
+      onChange(val) {
+        if (syncMode) driverKnob.setValue(val, true);
+        updateStatus();
+      }
+    });
+
+    // ── Fan slider ─────────────────────────────────────────────────────────────
+    const fanSlider = new TactSlider('#sliderFan', {
+      min: 0, max: FAN_MAX, value: 2, step: 1,
+      label: '',
+      formatValue: v => v === 0 ? 'OFF' : `${Math.round(v)}`,
+      onChange: updateFanDots
+    });
+
+    // Build fan dots
+    const fanDotsEl = document.getElementById('fanDots');
+    for (let i = 1; i <= FAN_MAX; i++) {
+      const d = document.createElement('div');
+      d.className = 'fan-dot';
+      d.dataset.step = i;
+      fanDotsEl.appendChild(d);
+    }
+
+    function updateFanDots(val) {
+      fanDotsEl.querySelectorAll('.fan-dot').forEach(d => {
+        d.classList.toggle('active', parseInt(d.dataset.step) <= val);
+      });
+    }
+    updateFanDots(2);
+
+    // ── Sync button ────────────────────────────────────────────────────────────
+    document.getElementById('syncBtn').addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      syncMode = !syncMode;
+      this.classList.toggle('active', syncMode);
+      if (syncMode) passengerKnob.setValue(driverKnob.value, false);
+    });
+
+    // ── Mode buttons ───────────────────────────────────────────────────────────
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentMode = this.dataset.mode;
+        vibrate(8);
+      });
+    });
+
+    // ── Toggle buttons ─────────────────────────────────────────────────────────
+    document.getElementById('acBtn').addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      acOn = !acOn;
+      this.classList.toggle('active', acOn);
+      updateStatus();
+    });
+
+    document.getElementById('autoBtn').addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      autoOn = !autoOn;
+      this.classList.toggle('active', autoOn);
+      vibrate(8);
+    });
+
+    document.getElementById('recirc').addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      recircOn = !recircOn;
+      this.classList.toggle('active', recircOn);
+      vibrate(8);
+    });
+
+    // ── Status LED update ──────────────────────────────────────────────────────
+    function updateStatus() {
+      const led  = document.getElementById('acLed');
+      const text = document.getElementById('acStatusText');
+      if (acOn) {
+        led.className = 'led on';
+        text.textContent = `A/C ${driverKnob.value.toFixed(1)}°`;
+      } else {
+        led.className = 'led';
+        text.textContent = 'OFF';
+      }
+    }
+
+    // ── Circular trajectory tracking ──────────────────────────────────────────
+    const fitStatus   = document.getElementById('fit-status');
+    const sampleStats = document.getElementById('sample-stats');
+
+    let SENSITIVITY = 1.0;
+
+    let gesture = {
+      active: false, pointerId: null, targetKnob: null, name: '',
+      points: [], center: null, prevAngle: null, accValue: 0,
+    };
+
+    // Threshold 1e-6: handles large-radius arcs where D approaches zero
+    function circumcenter(p1, p2, p3) {
+      const ax = p1.x, ay = p1.y, bx = p2.x, by = p2.y, cx = p3.x, cy = p3.y;
+      const D = 2 * (ax*(by-cy) + bx*(cy-ay) + cx*(ay-by));
+      if (Math.abs(D) < 1e-6) return null;
+      const ux = ((ax*ax+ay*ay)*(by-cy) + (bx*bx+by*by)*(cy-ay) + (cx*cx+cy*cy)*(ay-by)) / D;
+      const uy = ((ax*ax+ay*ay)*(cx-bx) + (bx*bx+by*by)*(ax-cx) + (cx*cx+cy*cy)*(bx-ax)) / D;
+      return { x: ux, y: uy };
+    }
+
+    // ── Shared gesture logic (touch + mouse) ──────────────────────────────────
+
+    function gestureStart(x, y, pid) {
+      if (gesture.active) return;
+      const side       = x < window.innerWidth / 2 ? 'left' : 'right';
+      const targetKnob = side === 'left' ? driverKnob : passengerKnob;
+      const name       = side === 'left' ? '駕駛' : '副駕';
+      gesture = {
+        active: true, pointerId: pid, targetKnob, name,
+        points: [{ x, y }], center: null, prevAngle: null,
+        accValue: targetKnob.value,
+      };
+      fitStatus.className   = 'fit-status';
+      fitStatus.textContent = '收集軌跡中...';
+      sampleStats.textContent = '已採樣 1 點';
+      console.log(`[TactKnob] start → ${name}旋鈕  (${Math.round(x)}, ${Math.round(y)})  目前值=${targetKnob.value.toFixed(1)}°C`);
+    }
+
+    function gestureMove(x, y, pid) {
+      if (!gesture.active || pid !== gesture.pointerId) return;
+
+      if (!gesture.center) {
+        // Sample ≥5px apart (was 8px — lower threshold catches more arc coverage)
+        const last = gesture.points[gesture.points.length - 1];
+        const dist = Math.hypot(x - last.x, y - last.y);
+        if (dist >= 5) gesture.points.push({ x, y });
+
+        // Live sampling stats
+        const distNow = Math.round(Math.hypot(
+          x - gesture.points[gesture.points.length - 1].x,
+          y - gesture.points[gesture.points.length - 1].y
+        ));
+        sampleStats.textContent = `已採樣 ${gesture.points.length} 點  最近距離 ${distNow}px`;
+
+        // Attempt circumcenter every move — sliding window of last 12 points
+        // so the fit stays fresh as gesture progresses (not pinned to first point)
+        if (gesture.points.length >= 3) {
+          const win = gesture.points.length > 12
+            ? gesture.points.slice(-12) : gesture.points;
+          const p1 = win[0];
+          const p2 = win[Math.floor((win.length - 1) / 2)];
+          const p3 = win[win.length - 1];
+          const c  = circumcenter(p1, p2, p3);
+
+          if (c) {
+            const r = Math.hypot(x - c.x, y - c.y);
+            if (r >= 10 && r <= 800) {   // relaxed: 10–800px covers all practical sizes
+              gesture.center    = c;
+              gesture.prevAngle = Math.atan2(y - c.y, x - c.x) * 180 / Math.PI;
+              fitStatus.className   = 'fit-status ready';
+              fitStatus.textContent = `⊙ r=${Math.round(r)}px`;
+              console.log(`[TactKnob] 圓心確定 → ${gesture.name}  圓心(${Math.round(c.x)}, ${Math.round(c.y)})  半徑≈${Math.round(r)}px  已收集${gesture.points.length}點`);
+            }
+          }
+        }
+        return;
+      }
+
+      // Circle confirmed — angle delta → value
+      const angle = Math.atan2(y - gesture.center.y, x - gesture.center.x) * 180 / Math.PI;
+      let delta = angle - gesture.prevAngle;
+      if (delta >  180) delta -= 360;
+      if (delta < -180) delta += 360;
+      gesture.prevAngle = angle;
+
+      const valueRange = gesture.targetKnob.max - gesture.targetKnob.min;
+      const valueDelta  = delta * SENSITIVITY * valueRange / 360;
+      gesture.accValue  = clamp(gesture.accValue + valueDelta,
+                                gesture.targetKnob.min, gesture.targetKnob.max);
+      console.log('[DEBUG] delta=', delta.toFixed(2), 'Δval=', valueDelta.toFixed(3), 'acc=', gesture.accValue.toFixed(2));
+      gesture.targetKnob.setValue(gesture.accValue);
+    }
+
+    function gestureEnd(pid) {
+      if (!gesture.active || pid !== gesture.pointerId) return;
+      console.log(`[TactKnob] end → ${gesture.name}  最終值=${gesture.targetKnob.value.toFixed(1)}°C`);
+      gesture.active        = false;
+      fitStatus.className   = 'fit-status';
+      fitStatus.textContent = '等待旋轉...';
+      sampleStats.textContent = '';
+    }
+
+    // Pointer events — touch & stylus only (skip mouse to avoid double-fire on desktop)
+    document.addEventListener('pointerdown',   e => { if (e.pointerType !== 'mouse') gestureStart(e.clientX, e.clientY, e.pointerId); });
+    document.addEventListener('pointermove',   e => { if (e.pointerType !== 'mouse') gestureMove (e.clientX, e.clientY, e.pointerId); });
+    document.addEventListener('pointerup',     e => { if (e.pointerType !== 'mouse') gestureEnd  (e.pointerId); });
+    document.addEventListener('pointercancel', e => { if (e.pointerType !== 'mouse') gestureEnd  (e.pointerId); });
+
+    // Mouse events — desktop testing (separate path to avoid double-fire)
+    document.addEventListener('mousedown', e => { if (e.button === 0) gestureStart(e.clientX, e.clientY, 'mouse'); });
+    document.addEventListener('mousemove', e => {                      gestureMove (e.clientX, e.clientY, 'mouse'); });
+    document.addEventListener('mouseup',   e => { if (e.button === 0) gestureEnd  ('mouse'); });
+
+    // Touch events — Surface / Android finger input
+    // passive:false allows e.preventDefault() to block page scroll during gesture
+    document.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const t = e.touches[0];
+      gestureStart(t.clientX, t.clientY, 'touch');
+    }, { passive: false });
+
+    document.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const t = e.touches[0];
+      gestureMove(t.clientX, t.clientY, 'touch');
+    }, { passive: false });
+
+    document.addEventListener('touchend',    () => gestureEnd('touch'));
+    document.addEventListener('touchcancel', () => gestureEnd('touch'));
+
+    // ── Sensitivity slider ────────────────────────────────────────────────────
+    document.getElementById('sensitivity-slider').addEventListener('input', function () {
+      SENSITIVITY = parseFloat(this.value);
+      document.getElementById('sensitivity-val').textContent = SENSITIVITY.toFixed(2);
+    });
+
+    // ── Simulate ambient temp drift ────────────────────────────────────────────
+    let ambientBase = 26;
+    setInterval(() => {
+      ambientBase += (Math.random() - 0.5) * 0.2;
+      ambientBase = Math.max(20, Math.min(35, ambientBase));
+      document.getElementById('ambientTemp').textContent =
+        ambientBase.toFixed(1) + '°C';
+    }, 3000);
+  </script>
+</body>
+</html>

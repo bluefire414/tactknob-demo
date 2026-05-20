@@ -1,0 +1,261 @@
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #F5F4F0;
+  --surface:   #FFFFFF;
+  --border:    #E0DED8;
+  --text:      #1C1C1E;
+  --text-2:    #6E6E73;
+  --accent:    #1D9E75;
+  --accent-2:  #15795B;
+  --knob-body: #1C1C1E;
+  --danger:    #E84040;
+  --radius-card: 12px;
+  --radius-btn:  8px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Knob Component ───────────────────────────────────────────────────────── */
+.knob-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.knob-svg {
+  touch-action: none;
+  cursor: grab;
+  overflow: visible;
+}
+.knob-svg:active { cursor: grabbing; }
+
+.knob-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.knob-value-display {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.knob-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-left: 2px;
+}
+
+.knob-off .knob-value-num { color: var(--text-2); }
+.knob-off .knob-body      { fill: #3A3A3C; }
+.knob-off .knob-progress  { display: none; }
+
+.knob-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── Slider Component ─────────────────────────────────────────────────────── */
+.slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.slider-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.slider-track-area {
+  touch-action: none;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.slider-track {
+  position: relative;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.slider-fill {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: var(--accent);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+  pointer-events: none;
+  transition: border-color 0.15s;
+}
+
+.slider-track-area:active .slider-thumb {
+  border-color: var(--accent);
+}
+
+.slider-steps {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.slider-step-label {
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.slider-value-display {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.slider-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-left: 2px;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px;
+}
+
+/* ── Toggle Button ────────────────────────────────────────────────────────── */
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.toggle-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.toggle-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Status LED ───────────────────────────────────────────────────────────── */
+.led {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.led.on  { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.led.warn { background: #F5A623; box-shadow: 0 0 6px #F5A623; }
+
+/* ── Page Header ──────────────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.page-header a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.page-header h1 {
+  font-size: 17px;
+  font-weight: 700;
+  flex: 1;
+}
+
+/* ── Scene Body ───────────────────────────────────────────────────────────── */
+.scene-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 430px;
+  margin: 0 auto;
+}
+
+/* ── Row Layout ───────────────────────────────────────────────────────────── */
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.row > * { flex: 1; }
+
+/* ── Section Label ────────────────────────────────────────────────────────── */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}

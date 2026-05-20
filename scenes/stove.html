@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>瓦斯爐台 — TactKnob</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { min-height: 100dvh; }
+
+    /* ── Burner grid ── */
+    .burner-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .burner-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      padding: 12px 8px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      transition: border-color 0.2s;
+      position: relative;
+    }
+    .burner-card.on { border-color: #F5A623; }
+    .burner-card.high { border-color: var(--danger); }
+
+    /* ── Flame visual ── */
+    .flame-display {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      line-height: 1;
+      margin-bottom: 2px;
+      filter: grayscale(1);
+      transition: filter 0.3s, transform 0.2s;
+    }
+    .burner-card.on  .flame-display { filter: none; }
+    .burner-card.on  .flame-display { transform: scale(1.05); }
+    .burner-card.high .flame-display { transform: scale(1.15); }
+
+    /* ── Burner position label ── */
+    .burner-pos {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 4px;
+    }
+
+    /* ── Power level indicator ── */
+    .power-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .power-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: #1D9E75;
+      transition: width 0.15s, background 0.3s;
+    }
+
+    .power-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-top: 4px;
+    }
+    .burner-card.on .power-label { color: var(--text); }
+
+    /* ── Lock badge ── */
+    .lock-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .burner-card:not(.on) .lock-badge { opacity: 1; }
+
+    /* ── Total wattage ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .status-bar strong { color: var(--text); font-size: 15px; font-weight: 700; }
+
+    /* ── Safety timer ── */
+    .safety-note {
+      font-size: 12px;
+      color: var(--text-2);
+      text-align: center;
+      padding: 8px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a href="../index.html">← 返回</a>
+    <h1>瓦斯爐台</h1>
+    <div class="ac-status">
+      <span class="led" id="stoveLed"></span>
+      <span id="stoveStatusText">全部關閉</span>
+    </div>
+  </header>
+
+  <div class="status-bar">
+    <span>燃燒中</span>
+    <strong id="activeBurners">0 / 4</strong>
+    <span id="totalPower">0 W</span>
+  </div>
+
+  <div class="scene-body">
+
+    <div class="burner-grid" id="burnerGrid">
+      <!-- Burners injected by JS -->
+    </div>
+
+    <div class="safety-note" id="safetyNote"></div>
+
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/knob.js"></script>
+  <script>
+    // ── Burner config ──────────────────────────────────────────────────────────
+    const BURNERS = [
+      { id: 'fl', label: '左前', maxW: 3500 },
+      { id: 'fr', label: '右前', maxW: 4000 },
+      { id: 'rl', label: '左後', maxW: 2500 },
+      { id: 'rr', label: '右後', maxW: 2800 },
+    ];
+
+    const POWER_LABELS = ['關閉', '小火', '中小火', '中火', '中大火', '大火'];
+
+    const knobs = {};
+    const grid = document.getElementById('burnerGrid');
+
+    // ── Build burner cards ─────────────────────────────────────────────────────
+    BURNERS.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'burner-card';
+      card.id = `card-${b.id}`;
+      card.innerHTML = `
+        <span class="lock-badge">🔒</span>
+        <div class="burner-pos">${b.label}</div>
+        <div class="flame-display" id="flame-${b.id}">🔥</div>
+        <div id="knob-${b.id}"></div>
+        <div class="power-bar"><div class="power-fill" id="fill-${b.id}" style="width:0%"></div></div>
+        <div class="power-label" id="plabel-${b.id}">關閉</div>
+      `;
+      grid.appendChild(card);
+
+      knobs[b.id] = new TactKnob(`#knob-${b.id}`, {
+        min: 0, max: 5, value: 0, step: 1,
+        label: '', unit: '',
+        angleMin: -135, angleMax: 135,
+        formatValue: v => POWER_LABELS[Math.round(v)],
+        onChange: (val) => updateBurner(b.id, val, b.maxW)
+      });
+    });
+
+    // ── Update single burner ───────────────────────────────────────────────────
+    function updateBurner(id, val, maxW) {
+      const step = Math.round(val);
+      const card  = document.getElementById(`card-${id}`);
+      const fill  = document.getElementById(`fill-${id}`);
+      const plabel = document.getElementById(`plabel-${id}`);
+      const flame  = document.getElementById(`flame-${id}`);
+
+      const pct = (step / 5) * 100;
+      fill.style.width = pct + '%';
+      plabel.textContent = POWER_LABELS[step];
+
+      // Flame color by intensity
+      const colors = ['#ccc', '#2196F3', '#4CAF50', '#FF9800', '#FF5722', '#E53935'];
+      fill.style.background = colors[step];
+
+      // Card state
+      card.classList.toggle('on',   step > 0);
+      card.classList.toggle('high', step >= 5);
+
+      // Flame emoji size by step
+      flame.style.fontSize = step === 0 ? '32px'
+                           : step <= 2  ? '34px'
+                           : step <= 4  ? '38px' : '44px';
+
+      updateTotals();
+    }
+
+    // ── Update totals ──────────────────────────────────────────────────────────
+    function updateTotals() {
+      let active = 0;
+      let totalW = 0;
+
+      BURNERS.forEach(b => {
+        const step = Math.round(knobs[b.id].value);
+        if (step > 0) {
+          active++;
+          totalW += Math.round((step / 5) * b.maxW);
+        }
+      });
+
+      document.getElementById('activeBurners').textContent = `${active} / 4`;
+      document.getElementById('totalPower').textContent =
+        totalW > 0 ? `${totalW.toLocaleString()} W` : '0 W';
+
+      const led  = document.getElementById('stoveLed');
+      const text = document.getElementById('stoveStatusText');
+      led.className  = active > 0 ? 'led warn' : 'led';
+      text.textContent = active > 0 ? `${active} 爐點火中` : '全部關閉';
+
+      // Safety timer message
+      const note = document.getElementById('safetyNote');
+      note.textContent = active > 0
+        ? '⚠️ 請勿離開廚房，使用中請保持通風'
+        : '';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TactKnob — 實體觸控旋鈕展示</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 40px 24px 28px;
+      text-align: center;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text);
+    }
+
+    .brand span {
+      color: var(--accent);
+    }
+
+    .tagline {
+      font-size: 14px;
+      color: var(--text-2);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+    /* ── Section heading ── */
+    .section-heading {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      padding: 20px 16px 8px;
+    }
+
+    /* ── Scene cards ── */
+    .scene-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0 16px;
+    }
+
+    .scene-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
+      touch-action: manipulation;
+    }
+
+    .scene-card:active {
+      background: #EEEDEA;
+      border-color: #C8C6C0;
+    }
+
+    .scene-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+
+    .scene-info { flex: 1; min-width: 0; }
+
+    .scene-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .scene-desc {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    .scene-arrow {
+      font-size: 18px;
+      color: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* ── How it works ── */
+    .how-section {
+      margin: 0 16px;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+    }
+
+    .how-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-content { flex: 1; }
+    .step-title { font-size: 13px; font-weight: 700; }
+    .step-desc  { font-size: 12px; color: var(--text-2); margin-top: 2px; line-height: 1.4; }
+
+    .step-connector {
+      width: 2px;
+      height: 14px;
+      background: var(--border);
+      margin-left: 13px;
+    }
+
+    /* ── Spec chips ── */
+    .spec-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 16px 16px;
+    }
+
+    .spec-chip {
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      background: var(--surface);
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: auto;
+      padding: 20px 16px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-2);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="brand">Tact<span>Knob</span></div>
+    <div class="tagline">實體觸控旋鈕 · 無需藍牙 · 無需電池</div>
+    <div class="hero-badge">
+      <span class="dot"></span>
+      互動展示 Demo
+    </div>
+  </div>
+
+  <!-- Scene selection -->
+  <div class="section-heading">應用場景</div>
+  <div class="scene-list">
+
+    <a class="scene-card" href="scenes/ac.html">
+      <div class="scene-icon">🚗</div>
+      <div class="scene-info">
+        <div class="scene-title">車載空調</div>
+        <div class="scene-desc">雙區溫控旋鈕 · 風速滑桿 · 出風模式 · A/C 開關</div>
+      </div>
+      <span class="scene-arrow">›</span>
+    </a>
+
+    <a class="scene-card" href="scenes/stove.html">
+      <div class="scene-icon">🍳</div>
+      <div class="scene-info">
+        <div class="scene-title">瓦斯爐台</div>
+        <div class="scene-desc">四爐獨立火力旋鈕 · 小火到大火 · 即時瓦數顯示</div>
+      </div>
+      <span class="scene-arrow">›</span>
+    </a>
+
+    <a class="scene-card" href="scenes/hood.html">
+      <div class="scene-icon">💨</div>
+      <div class="scene-info">
+        <div class="scene-title">抽油煙機</div>
+        <div class="scene-desc">風速旋鈕 · 照明亮度 · 延遲關閉滑桿 · 濾網狀態</div>
+      </div>
+      <span class="scene-arrow">›</span>
+    </a>
+
+  </div>
+
+  <!-- Spec chips -->
+  <div class="section-heading">產品規格</div>
+  <div class="spec-row">
+    <span class="spec-chip">直徑 50mm</span>
+    <span class="spec-chip">導電塑膠</span>
+    <span class="spec-chip">7mm 觸控點</span>
+    <span class="spec-chip">無需配對</span>
+    <span class="spec-chip">無需電池</span>
+    <span class="spec-chip">支援多點</span>
+  </div>
+
+  <!-- How it works -->
+  <div class="section-heading">運作原理</div>
+  <div class="how-section">
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">放置旋鈕於螢幕上</div>
+          <div class="step-desc">實體旋鈕底座中心有單一導電觸控點，直接擺放在任何觸控螢幕上即可使用。</div>
+        </div>
+      </div>
+
+      <div class="step-connector"></div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">旋轉時觸控點隨之移動</div>
+          <div class="step-desc">旋轉旋鈕時，底座觸控點沿圓弧軌跡位移，螢幕持續偵測觸控座標變化，換算為角度。</div>
+        </div>
+      </div>
+
+      <div class="step-connector"></div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">App 即時換算數值</div>
+          <div class="step-desc">應用程式根據角度變化量即時更新控制數值，不需藍牙、不需電池，純觸控感應。</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    TactKnob · 實體觸控旋鈕展示系統 · 純瀏覽器運作
+  </footer>
+
+</body>
+</html>
