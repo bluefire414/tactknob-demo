@@ -155,6 +155,16 @@
     }
 
 
+    /* ── Target selection highlight ── */
+    .zone-knob.target-selected {
+      outline: 2px solid #1D9E75;
+      border-radius: 12px;
+      padding: 6px;
+    }
+    .card.target-selected {
+      outline: 2px solid #1D9E75;
+    }
+
     /* ── Sensitivity panel ── */
     #sensitivity-panel {
       position: fixed;
@@ -209,23 +219,17 @@
       border-color: #fff;
     }
 
-    /* ── Circle fit status ── */
-    #fit-status {
-      font-size: 10px;
-      color: rgba(255,255,255,0.45);
-      margin-top: 2px;
+    /* ── Zone status display ── */
+    #zone-status {
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
       text-align: center;
-      font-family: 'SF Mono', 'Menlo', monospace;
+      margin-top: 4px;
+      font-weight: 600;
+      min-height: 16px;
+      letter-spacing: 0.03em;
     }
-    #fit-status.ready { color: #1D9E75; }
-
-    #sample-stats {
-      font-size: 10px;
-      color: rgba(255,255,255,0.4);
-      text-align: center;
-      font-family: 'SF Mono', 'Menlo', monospace;
-      min-height: 14px;
-    }
+    #zone-status.active { color: #1D9E75; }
   </style>
 </head>
 <body>
@@ -252,7 +256,7 @@
       <div class="section-label">溫度控制</div>
       <div class="dual-knobs">
         <!-- Driver -->
-        <div class="zone-knob">
+        <div class="zone-knob" id="zoneDriver">
           <div class="zone-badge">駕駛</div>
           <div id="knobDriver"></div>
         </div>
@@ -271,7 +275,7 @@
         </div>
 
         <!-- Passenger -->
-        <div class="zone-knob">
+        <div class="zone-knob" id="zonePassenger">
           <div class="zone-badge">副駕</div>
           <div id="knobPassenger"></div>
         </div>
@@ -279,7 +283,7 @@
     </div>
 
     <!-- Fan speed -->
-    <div class="card">
+    <div class="card" id="cardFan">
       <div class="section-label">風速</div>
       <div class="fan-row">
         <span class="fan-icon">🌬</span>
@@ -325,7 +329,7 @@
   <!-- Sensitivity panel -->
   <div id="sensitivity-panel">
     <div class="sens-title">靈敏度</div>
-    <div class="sens-subtitle" id="sens-subtitle">轉一圈 ≈ --°C</div>
+    <div class="sens-subtitle" id="sens-subtitle">滑動 100px ≈ --°C</div>
     <div class="sens-grid">
       <button class="sens-btn" data-val="0.5">0.5</button>
       <button class="sens-btn" data-val="1.0">1.0</button>
@@ -334,8 +338,8 @@
       <button class="sens-btn" data-val="3.0">3.0</button>
       <button class="sens-btn" data-val="5.0">5.0</button>
     </div>
-    <div id="fit-status">等待旋轉...</div>
-    <div id="sample-stats"></div>
+    <div id="zone-status">—</div>
+    <button id="export-log-btn" class="sens-btn" style="width:100%;margin-top:8px;">匯出 Log</button>
   </div>
 
 
@@ -450,107 +454,155 @@
       }
     }
 
-    // ── Circular trajectory tracking ──────────────────────────────────────────
-    const fitStatus   = document.getElementById('fit-status');
-    const sampleStats = document.getElementById('sample-stats');
+    // ── Active target selection ───────────────────────────────────────────────
+    const zoneStatus = document.getElementById('zone-status');
+    let activeTarget = null; // 'driver' | 'passenger' | 'fan'
 
-    let SENSITIVITY = 2.0;
-
-    let gesture = {
-      active: false, pointerId: null, targetKnob: null, name: '',
-      points: [], center: null, prevAngle: null, accValue: 0,
-    };
-
-    // Threshold 1e-6: handles large-radius arcs where D approaches zero
-    function circumcenter(p1, p2, p3) {
-      const ax = p1.x, ay = p1.y, bx = p2.x, by = p2.y, cx = p3.x, cy = p3.y;
-      const D = 2 * (ax*(by-cy) + bx*(cy-ay) + cx*(ay-by));
-      if (Math.abs(D) < 1e-6) return null;
-      const ux = ((ax*ax+ay*ay)*(by-cy) + (bx*bx+by*by)*(cy-ay) + (cx*cx+cy*cy)*(ay-by)) / D;
-      const uy = ((ax*ax+ay*ay)*(cx-bx) + (bx*bx+by*by)*(ax-cx) + (cx*cx+cy*cy)*(bx-ax)) / D;
-      return { x: ux, y: uy };
+    function updateZoneStatusPanel() {
+      if (activeTarget === null) {
+        zoneStatus.className   = '';
+        zoneStatus.textContent = '請點選要控制的項目';
+      } else if (activeTarget === 'driver') {
+        zoneStatus.className   = 'active';
+        zoneStatus.textContent = `● 駕駛  ${driverKnob.value.toFixed(1)}°C`;
+      } else if (activeTarget === 'passenger') {
+        zoneStatus.className   = 'active';
+        zoneStatus.textContent = `● 副駕  ${passengerKnob.value.toFixed(1)}°C`;
+      } else if (activeTarget === 'fan') {
+        zoneStatus.className   = 'active';
+        zoneStatus.textContent = `● 風速  ${fanSlider.value} / ${FAN_MAX}`;
+      }
     }
 
-    // ── Shared gesture logic (touch + mouse) ──────────────────────────────────
+    function setActiveTarget(target) {
+      activeTarget = target;
+      document.getElementById('zoneDriver').classList.toggle('target-selected',    target === 'driver');
+      document.getElementById('zonePassenger').classList.toggle('target-selected', target === 'passenger');
+      document.getElementById('cardFan').classList.toggle('target-selected',       target === 'fan');
+      updateZoneStatusPanel();
+      vibrate(8);
+    }
+
+    document.getElementById('zoneDriver').addEventListener('pointerdown',    () => setActiveTarget('driver'));
+    document.getElementById('zonePassenger').addEventListener('pointerdown', () => setActiveTarget('passenger'));
+    document.getElementById('cardFan').addEventListener('pointerdown',       () => setActiveTarget('fan'));
+
+    updateZoneStatusPanel();
+
+    // ── Gesture log ───────────────────────────────────────────────────────────
+    let SENSITIVITY = 2.0;
+
+    window.gestureLog = [];
+    const LOG_MAX = 500;
+
+    function logPush(entry) {
+      window.gestureLog.push(entry);
+      if (window.gestureLog.length > LOG_MAX) window.gestureLog.shift();
+    }
+
+    // ── Gesture tracking ──────────────────────────────────────────────────────
+    const INIT_POINTS = 8;
+
+    let gesture = {
+      active: false, pointerId: null,
+      phase: 'collecting', initPoints: [],
+      lastX: 0, lastY: 0, cx: 0, cy: 0,
+      accValue: 0, fanAccValue: 0, startT: 0,
+    };
 
     function gestureStart(x, y, pid) {
       if (gesture.active) return;
-      const side       = x < window.innerWidth / 2 ? 'left' : 'right';
-      const targetKnob = side === 'left' ? driverKnob : passengerKnob;
-      const name       = side === 'left' ? '駕駛' : '副駕';
       gesture = {
-        active: true, pointerId: pid, targetKnob, name,
-        points: [{ x, y }], center: null, prevAngle: null,
-        accValue: targetKnob.value,
+        active: true, pointerId: pid,
+        phase: 'collecting', initPoints: [],
+        lastX: x, lastY: y, cx: 0, cy: 0,
+        accValue: 0, fanAccValue: 0, startT: performance.now(),
       };
-      fitStatus.className   = 'fit-status';
-      fitStatus.textContent = '收集軌跡中...';
-      sampleStats.textContent = '已採樣 1 點';
-      console.log(`[TactKnob] start → ${name}旋鈕  (${Math.round(x)}, ${Math.round(y)})  目前值=${targetKnob.value.toFixed(1)}°C`);
+      logPush({ event: 'start', t: 0, x, y, activeTarget });
     }
 
     function gestureMove(x, y, pid) {
       if (!gesture.active || pid !== gesture.pointerId) return;
 
-      if (!gesture.center) {
-        // Sample ≥5px apart (was 8px — lower threshold catches more arc coverage)
-        const last = gesture.points[gesture.points.length - 1];
-        const dist = Math.hypot(x - last.x, y - last.y);
-        if (dist >= 2) gesture.points.push({ x, y });
+      const vx2 = x - gesture.lastX;
+      const vy2 = y - gesture.lastY;
+      const dist = Math.sqrt(vx2 * vx2 + vy2 * vy2);
 
-        // Live sampling stats
-        const distNow = Math.round(Math.hypot(
-          x - gesture.points[gesture.points.length - 1].x,
-          y - gesture.points[gesture.points.length - 1].y
-        ));
-        sampleStats.textContent = `已採樣 ${gesture.points.length} 點  最近距離 ${distNow}px`;
-
-        // Attempt circumcenter every move — sliding window of last 12 points
-        // so the fit stays fresh as gesture progresses (not pinned to first point)
-        if (gesture.points.length >= 3) {
-          const win = gesture.points.length > 6
-            ? gesture.points.slice(-6) : gesture.points;
-          const p1 = win[0];
-          const p2 = win[Math.floor((win.length - 1) / 2)];
-          const p3 = win[win.length - 1];
-          const c  = circumcenter(p1, p2, p3);
-
-          if (c) {
-            const r = Math.hypot(x - c.x, y - c.y);
-            if (r >= 5 && r <= 800) {   // relaxed: 5–800px covers all practical sizes
-              gesture.center    = c;
-              gesture.prevAngle = Math.atan2(y - c.y, x - c.x) * 180 / Math.PI;
-              fitStatus.className   = 'fit-status ready';
-              fitStatus.textContent = `⊙ r=${Math.round(r)}px`;
-              console.log(`[TactKnob] 圓心確定 → ${gesture.name}  圓心(${Math.round(c.x)}, ${Math.round(c.y)})  半徑≈${Math.round(r)}px  已收集${gesture.points.length}點`);
-            }
-          }
+      // ── 收集階段 ─────────────────────────────────────────────────────────
+      if (gesture.phase === 'collecting') {
+        if (dist >= 1) {
+          gesture.initPoints.push({ x, y });
+          gesture.lastX = x;
+          gesture.lastY = y;
+          zoneStatus.className   = '';
+          zoneStatus.textContent = `校準中... (${gesture.initPoints.length}/${INIT_POINTS})`;
+          logPush({ phase: 'collecting', t: +(performance.now() - gesture.startT).toFixed(1), x: +x.toFixed(1), y: +y.toFixed(1) });
+        }
+        if (gesture.initPoints.length >= INIT_POINTS) {
+          let sumX = 0, sumY = 0;
+          for (const p of gesture.initPoints) { sumX += p.x; sumY += p.y; }
+          gesture.cx = sumX / gesture.initPoints.length;
+          gesture.cy = sumY / gesture.initPoints.length;
+          gesture.phase = 'tracking';
+          // 初始化各目標的累積器
+          if (activeTarget === 'driver')    gesture.accValue = driverKnob.value;
+          if (activeTarget === 'passenger') gesture.accValue = passengerKnob.value;
+          if (activeTarget === 'fan')       gesture.fanAccValue = fanSlider.value;
+          updateZoneStatusPanel();
         }
         return;
       }
 
-      // Circle confirmed — angle delta → value
-      const angle = Math.atan2(y - gesture.center.y, x - gesture.center.x) * 180 / Math.PI;
-      let delta = angle - gesture.prevAngle;
-      if (delta >  180) delta -= 360;
-      if (delta < -180) delta += 360;
-      gesture.prevAngle = angle;
+      // ── 追蹤階段 ─────────────────────────────────────────────────────────
+      if (activeTarget === null) { gesture.lastX = x; gesture.lastY = y; return; }
 
-      const valueRange = gesture.targetKnob.max - gesture.targetKnob.min;
-      const valueDelta  = delta * SENSITIVITY * valueRange / 360;
-      gesture.accValue  = clamp(gesture.accValue + valueDelta,
-                                gesture.targetKnob.min, gesture.targetKnob.max);
-      console.log('[DEBUG] delta=', delta.toFixed(2), 'Δval=', valueDelta.toFixed(3), 'acc=', gesture.accValue.toFixed(2));
-      gesture.targetKnob.setValue(gesture.accValue);
+      gesture.lastX = x;
+      gesture.lastY = y;
+      if (dist < 1) return;
+
+      const vx1   = (x - vx2) - gesture.cx;
+      const vy1   = (y - vy2) - gesture.cy;
+      const cross = vx1 * vy2 - vy1 * vx2;
+      const sign  = cross > 0 ? 1 : -1;
+
+      if (activeTarget === 'driver' || activeTarget === 'passenger') {
+        const knob      = activeTarget === 'driver' ? driverKnob : passengerKnob;
+        const tempDelta = sign * dist * SENSITIVITY / 100;
+        gesture.accValue = clamp(gesture.accValue + tempDelta, knob.min, knob.max);
+        knob.setValue(gesture.accValue);
+        updateZoneStatusPanel();
+        logPush({
+          phase: 'tracking', activeTarget,
+          t: +(performance.now() - gesture.startT).toFixed(1),
+          x: +x.toFixed(1), y: +y.toFixed(1),
+          cx: +gesture.cx.toFixed(1), cy: +gesture.cy.toFixed(1),
+          dist: +dist.toFixed(2), cross: +cross.toFixed(2),
+          tempDelta: +(sign * dist * SENSITIVITY / 100).toFixed(4),
+          accValue: +gesture.accValue.toFixed(2),
+        });
+      } else if (activeTarget === 'fan') {
+        gesture.fanAccValue = clamp(
+          gesture.fanAccValue + sign * dist * SENSITIVITY / 100 * (7 / 14),
+          1, FAN_MAX
+        );
+        fanSlider.setValue(Math.round(gesture.fanAccValue));
+        updateZoneStatusPanel();
+        logPush({
+          phase: 'tracking', activeTarget: 'fan',
+          t: +(performance.now() - gesture.startT).toFixed(1),
+          x: +x.toFixed(1), y: +y.toFixed(1),
+          dist: +dist.toFixed(2), cross: +cross.toFixed(2),
+          fanAccValue: +gesture.fanAccValue.toFixed(2),
+          fanValue: fanSlider.value,
+        });
+      }
     }
 
     function gestureEnd(pid) {
       if (!gesture.active || pid !== gesture.pointerId) return;
-      console.log(`[TactKnob] end → ${gesture.name}  最終值=${gesture.targetKnob.value.toFixed(1)}°C`);
-      gesture.active        = false;
-      fitStatus.className   = 'fit-status';
-      fitStatus.textContent = '等待旋轉...';
-      sampleStats.textContent = '';
+      logPush({ event: 'end', t: +(performance.now() - gesture.startT).toFixed(1), activeTarget, accValue: +gesture.accValue.toFixed(2) });
+      gesture.active = false;
+      updateZoneStatusPanel();
     }
 
     // Pointer events — touch & stylus only (skip mouse to avoid double-fire on desktop)
@@ -565,7 +617,6 @@
     document.addEventListener('mouseup',   e => { if (e.button === 0) gestureEnd  ('mouse'); });
 
     // Touch events — Surface / Android finger input
-    // passive:false allows e.preventDefault() to block page scroll during gesture
     document.addEventListener('touchstart', e => {
       e.preventDefault();
       const t = e.touches[0];
@@ -578,13 +629,12 @@
       gestureMove(t.clientX, t.clientY, 'touch');
     }, { passive: false });
 
-    document.addEventListener('touchend',    () => gestureEnd('touch'));
-    document.addEventListener('touchcancel', () => gestureEnd('touch'));
+    document.addEventListener('touchend',    e => gestureEnd('touch'));
+    document.addEventListener('touchcancel', e => gestureEnd('touch'));
 
     // ── Sensitivity buttons ───────────────────────────────────────────────────
     function updateSensitivityUI() {
-      const deg = Math.round(14 * SENSITIVITY);
-      document.getElementById('sens-subtitle').textContent = `轉一圈 ≈ ${deg}°C`;
+      document.getElementById('sens-subtitle').textContent = `滑動 100px ≈ ${SENSITIVITY.toFixed(1)}°C`;
       document.querySelectorAll('.sens-btn').forEach(btn => {
         btn.classList.toggle('active', parseFloat(btn.dataset.val) === SENSITIVITY);
       });
@@ -596,6 +646,32 @@
         SENSITIVITY = parseFloat(btn.dataset.val);
         updateSensitivityUI();
       });
+    });
+
+    // ── Export log button ─────────────────────────────────────────────────────
+    document.getElementById('export-log-btn').addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      const log = window.gestureLog;
+      const moves = log.filter(r => !r.event);
+      const starts = log.filter(r => r.event === 'start').length;
+      const posCount = moves.filter(r => r.cross > 0).length;
+      const negCount = moves.filter(r => r.cross < 0).length;
+      const dists = moves.map(r => r.dist);
+      const avgDist = dists.length ? (dists.reduce((a, b) => a + b, 0) / dists.length).toFixed(2) : 0;
+      const temps = moves.map(r => r.accValue);
+      const tempMin = temps.length ? Math.min(...temps).toFixed(1) : '—';
+      const tempMax = temps.length ? Math.max(...temps).toFixed(1) : '—';
+      console.log(
+        `[TactKnob Log] 總筆數=${log.length}  操作次數=${starts}  平均dist=${avgDist}px` +
+        `  cross正=${posCount} 負=${negCount}(${posCount+negCount ? ((posCount/(posCount+negCount))*100).toFixed(0) : 0}%順時針)` +
+        `  溫度範圍=${tempMin}~${tempMax}°C`
+      );
+      const blob = new Blob([JSON.stringify(log, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'tactknob-log.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
     });
 
     // Prevent panel touches from triggering gesture tracking
