@@ -8,228 +8,185 @@
   <style>
     body { min-height: 100dvh; touch-action: none; }
 
-
     /* ── Ambient temp display ── */
     .ambient-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 10px 16px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-      color: var(--text-2);
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      font-size: 13px; color: var(--text-2);
     }
     .ambient-bar strong { color: var(--text); font-weight: 700; }
 
     /* ── Dual knob row ── */
-    .dual-knobs {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 0;
-      align-items: center;
-    }
-
-    .zone-knob {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
+    .dual-knobs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: center; }
+    .zone-knob  { display: flex; flex-direction: column; align-items: center; }
     .zone-badge {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-2);
-      padding: 2px 8px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      margin-bottom: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-2); padding: 2px 8px; border: 1px solid var(--border);
+      border-radius: 20px; margin-bottom: 4px;
     }
 
-    /* ── Sync button center ── */
-    .sync-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      padding: 0 8px;
-    }
-
+    /* ── Sync button ── */
+    .sync-col  { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 8px; }
     .sync-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: 1.5px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: all 0.15s;
-      background: var(--surface);
+      width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; touch-action: manipulation; transition: all 0.15s; background: var(--surface);
     }
-    .sync-icon.active {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-    .sync-icon svg { width: 16px; height: 16px; }
+    .sync-icon.active { background: var(--accent); border-color: var(--accent); }
+    .sync-icon svg    { width: 16px; height: 16px; }
     .sync-icon.active svg path { stroke: #fff; }
-    .sync-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-2);
-    }
+    .sync-label { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
 
     /* ── Fan speed ── */
-    .fan-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .fan-row { display: flex; align-items: center; gap: 12px; }
     .fan-icon { font-size: 20px; color: var(--text-2); }
     .fan-slider-wrap { flex: 1; }
-
-    /* ── Fan speed dots ── */
-    .fan-dots {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-      margin-top: 4px;
-    }
-    .fan-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--border);
-      transition: background 0.15s;
-    }
+    .fan-dots { display: flex; gap: 6px; justify-content: center; margin-top: 4px; }
+    .fan-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: background 0.15s; }
     .fan-dot.active { background: var(--accent); }
 
     /* ── Mode buttons ── */
-    .mode-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
+    .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .mode-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      padding: 12px 8px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-btn);
-      background: var(--surface);
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: all 0.15s;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-2);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 12px 8px; border: 1px solid var(--border); border-radius: var(--radius-btn);
+      background: var(--surface); cursor: pointer; touch-action: manipulation;
+      transition: all 0.15s; font-size: 11px; font-weight: 600; color: var(--text-2);
     }
     .mode-btn .mode-ico { font-size: 22px; line-height: 1; }
-    .mode-btn.active {
-      border-color: var(--accent);
-      background: rgba(29,158,117,0.08);
-      color: var(--accent);
-    }
+    .mode-btn.active { border-color: var(--accent); background: rgba(29,158,117,0.08); color: var(--accent); }
 
     /* ── Bottom toggles ── */
-    .bottom-row {
-      display: flex;
-      gap: 8px;
-    }
+    .bottom-row { display: flex; gap: 8px; }
     .bottom-row .toggle-btn { flex: 1; justify-content: center; }
 
-    /* ── AC status indicator ── */
-    .ac-status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
+    /* ── AC status ── */
+    .ac-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
 
     /* ── Target selection highlight ── */
-    .zone-knob.target-selected {
-      outline: 2px solid #1D9E75;
-      border-radius: 12px;
-      padding: 6px;
-    }
-    .card.target-selected {
-      outline: 2px solid #1D9E75;
-    }
+    .zone-knob.target-selected { outline: 2px solid #1D9E75; border-radius: 12px; padding: 6px; }
+    .card.target-selected { outline: 2px solid #1D9E75; }
 
     /* ── Sensitivity panel ── */
     #sensitivity-panel {
-      position: fixed;
-      bottom: 16px;
-      left: 16px;
-      background: rgba(0, 0, 0, 0.78);
-      color: #fff;
-      padding: 12px;
-      border-radius: 12px;
-      z-index: 10000;
-      pointer-events: auto;
-      user-select: none;
-      min-width: 180px;
+      position: fixed; bottom: 16px; left: 16px;
+      background: rgba(0,0,0,0.78); color: #fff;
+      padding: 12px; border-radius: 12px;
+      z-index: 10000; pointer-events: auto; user-select: none; min-width: 180px;
     }
-
-    .sens-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 2px;
-    }
-
-    .sens-subtitle {
-      font-size: 11px;
-      color: rgba(255,255,255,0.55);
-      margin-bottom: 10px;
-    }
-
-    .sens-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-
+    .sens-title    { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+    .sens-subtitle { font-size: 11px; color: rgba(255,255,255,0.55); margin-bottom: 10px; }
+    .sens-grid     { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
     .sens-btn {
-      min-height: 44px;
-      border: 1.5px solid rgba(255,255,255,0.25);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.65);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      touch-action: manipulation;
+      min-height: 44px; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 8px;
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.65);
+      font-size: 14px; font-weight: 600; cursor: pointer; touch-action: manipulation;
       transition: background 0.1s, color 0.1s, border-color 0.1s;
     }
+    .sens-btn.active { background: #fff; color: #1C1C1E; border-color: #fff; }
 
-    .sens-btn.active {
-      background: #fff;
-      color: #1C1C1E;
-      border-color: #fff;
-    }
-
-    /* ── Zone status display ── */
+    /* ── Zone status ── */
     #zone-status {
-      font-size: 12px;
-      color: rgba(255,255,255,0.55);
-      text-align: center;
-      margin-top: 4px;
-      font-weight: 600;
-      min-height: 16px;
-      letter-spacing: 0.03em;
+      font-size: 12px; color: rgba(255,255,255,0.45); text-align: center;
+      margin-top: 4px; font-weight: 600; min-height: 16px; letter-spacing: 0.03em;
     }
     #zone-status.active { color: #1D9E75; }
+
+    /* ── Circle size info row ── */
+    #circle-size-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 8px; gap: 6px;
+    }
+    #circle-size-info { font-size: 10px; color: rgba(255,255,255,0.40); flex: 1; line-height: 1.3; }
+    #circle-size-info.calibrated { color: #1D9E75; }
+    #calib-open-btn { font-size: 11px; font-weight: 600; padding: 5px 9px; min-height: 0; border-radius: 6px; white-space: nowrap; }
+
+    /* ── Sensing circle — pointer-events: none so it NEVER intercepts touches ── */
+    #sensing-circle {
+      position: fixed;
+      border-radius: 50%;
+      border: 2px dashed #1D9E75;
+      background: rgba(29,158,117,0.05);
+      z-index: 9000;
+      pointer-events: none;    /* ← key: completely transparent to all input */
+      user-select: none;
+      box-sizing: border-box;
+      display: flex; align-items: center; justify-content: center;
+      transform: translate(-50%, -50%);
+    }
+    #sensing-dot { width: 8px; height: 8px; border-radius: 50%; background: #1D9E75; opacity: 0.75; }
+
+    /* ── Calibration overlay ── */
+    #calibration-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.78);
+      z-index: 20000;
+      display: none;
+      touch-action: none;
+    }
+    #calibration-overlay.visible { display: block; }
+
+    /* Calibration circle — absolutely positioned, draggable */
+    #calib-circle {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 2px dashed #1D9E75;
+      background: rgba(29,158,117,0.10);
+      display: flex; align-items: center; justify-content: center;
+      cursor: grab; touch-action: none;
+      box-sizing: border-box;
+    }
+    #calib-circle.dragging { cursor: grabbing; background: rgba(29,158,117,0.20); border-color: #22d39a; }
+    #calib-circle-dot { width: 8px; height: 8px; border-radius: 50%; background: #1D9E75; opacity: 0.75; pointer-events: none; }
+
+    /* Control panel anchored to bottom */
+    #calib-panel {
+      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.88); border-radius: 16px;
+      padding: 16px 20px; min-width: 260px;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      touch-action: manipulation;
+    }
+    #calib-title       { font-size: 14px; font-weight: 700; color: #fff; }
+    #calib-instructions { font-size: 12px; color: rgba(255,255,255,0.55); text-align: center; line-height: 1.5; }
+
+    /* Direction pad */
+    #calib-dir-grid {
+      display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(3, 44px); gap: 4px;
+    }
+    .calib-dir-btn {
+      width: 44px; height: 44px; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.08);
+      color: #fff; font-size: 18px; cursor: pointer; touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center; user-select: none;
+    }
+    .calib-dir-btn:active { background: rgba(255,255,255,0.18); }
+    #calib-dir-center { display: flex; align-items: center; justify-content: center; }
+
+    /* Size controls */
+    #calib-size-row { display: flex; align-items: center; gap: 16px; }
+    .calib-adj-btn {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08);
+      color: #fff; font-size: 26px; cursor: pointer; touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center; user-select: none;
+    }
+    .calib-adj-btn:active { background: rgba(255,255,255,0.2); }
+    #calib-size-display { color: rgba(255,255,255,0.55); font-size: 12px; min-width: 80px; text-align: center; line-height: 1.4; }
+
+    /* Confirm / Cancel */
+    #calib-action-row { display: flex; align-items: center; gap: 12px; }
+    #calib-confirm {
+      background: #1D9E75; color: #fff; border: none;
+      border-radius: 10px; padding: 11px 28px;
+      font-size: 14px; font-weight: 700; cursor: pointer; touch-action: manipulation;
+    }
+    #calib-cancel {
+      background: transparent; color: rgba(255,255,255,0.4); border: none;
+      font-size: 13px; cursor: pointer; touch-action: manipulation; padding: 8px 12px;
+    }
   </style>
 </head>
 <body>
@@ -242,7 +199,6 @@
     </div>
   </header>
 
-  <!-- Ambient temperature bar -->
   <div class="ambient-bar">
     <span>車內溫度</span>
     <strong id="ambientTemp">26°C</strong>
@@ -251,30 +207,22 @@
 
   <div class="scene-body">
 
-    <!-- Dual zone temperature knobs -->
     <div class="card">
       <div class="section-label">溫度控制</div>
       <div class="dual-knobs">
-        <!-- Driver -->
         <div class="zone-knob" id="zoneDriver">
           <div class="zone-badge">駕駛</div>
           <div id="knobDriver"></div>
         </div>
-
-        <!-- Sync button -->
         <div class="sync-col">
-          <div class="sync-icon" id="syncBtn" title="同步兩側溫度">
+          <div class="sync-icon" id="syncBtn">
             <svg viewBox="0 0 24 24" fill="none">
-              <path d="M8 12h8M14 9l3 3-3 3" stroke="#6E6E73" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M16 12h-8M10 15l-3-3 3-3" stroke="#6E6E73" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 12h8M14 9l3 3-3 3" stroke="#6E6E73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 12h-8M10 15l-3-3 3-3" stroke="#6E6E73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <div class="sync-label">SYNC</div>
         </div>
-
-        <!-- Passenger -->
         <div class="zone-knob" id="zonePassenger">
           <div class="zone-badge">副駕</div>
           <div id="knobPassenger"></div>
@@ -282,7 +230,6 @@
       </div>
     </div>
 
-    <!-- Fan speed -->
     <div class="card" id="cardFan">
       <div class="section-label">風速</div>
       <div class="fan-row">
@@ -295,41 +242,32 @@
       </div>
     </div>
 
-    <!-- Air mode -->
     <div class="card">
       <div class="section-label">出風模式</div>
       <div class="mode-grid">
-        <button class="mode-btn active" data-mode="face">
-          <span class="mode-ico">😊</span>臉部
-        </button>
-        <button class="mode-btn" data-mode="feet">
-          <span class="mode-ico">🦶</span>腳部
-        </button>
-        <button class="mode-btn" data-mode="defrost">
-          <span class="mode-ico">❄️</span>除霜
-        </button>
+        <button class="mode-btn active" data-mode="face"><span class="mode-ico">😊</span>臉部</button>
+        <button class="mode-btn" data-mode="feet"><span class="mode-ico">🦶</span>腳部</button>
+        <button class="mode-btn" data-mode="defrost"><span class="mode-ico">❄️</span>除霜</button>
       </div>
     </div>
 
-    <!-- Bottom controls -->
     <div class="bottom-row">
-      <button class="toggle-btn" id="acBtn">
-        <span>❄️</span> A/C
-      </button>
-      <button class="toggle-btn" id="autoBtn">
-        <span>🔄</span> AUTO
-      </button>
-      <button class="toggle-btn" id="recirc">
-        <span>♻️</span> 內循環
-      </button>
+      <button class="toggle-btn" id="acBtn"><span>❄️</span> A/C</button>
+      <button class="toggle-btn" id="autoBtn"><span>🔄</span> AUTO</button>
+      <button class="toggle-btn" id="recirc"><span>♻️</span> 內循環</button>
     </div>
 
+  </div>
+
+  <!-- Sensing circle: pointer-events none, purely visual -->
+  <div id="sensing-circle">
+    <div id="sensing-dot"></div>
   </div>
 
   <!-- Sensitivity panel -->
   <div id="sensitivity-panel">
     <div class="sens-title">靈敏度</div>
-    <div class="sens-subtitle" id="sens-subtitle">滑動 100px ≈ --°C</div>
+    <div class="sens-subtitle" id="sens-subtitle">旋轉 100px ≈ --°C</div>
     <div class="sens-grid">
       <button class="sens-btn" data-val="0.5">0.5</button>
       <button class="sens-btn" data-val="1.0">1.0</button>
@@ -338,8 +276,49 @@
       <button class="sens-btn" data-val="3.0">3.0</button>
       <button class="sens-btn" data-val="5.0">5.0</button>
     </div>
-    <div id="zone-status">—</div>
+    <div id="zone-status">將旋鈕放在感應圓上</div>
+    <div id="circle-size-row">
+      <div id="circle-size-info">感應圓 45mm（估算）</div>
+      <button class="sens-btn" id="calib-open-btn">校準</button>
+    </div>
     <button id="export-log-btn" class="sens-btn" style="width:100%;margin-top:8px;">匯出 Log</button>
+  </div>
+
+  <!-- Calibration overlay -->
+  <div id="calibration-overlay">
+    <!-- Circle floats freely over the overlay -->
+    <div id="calib-circle"><div id="calib-circle-dot"></div></div>
+
+    <!-- Control panel at bottom -->
+    <div id="calib-panel">
+      <div id="calib-title">感應圓校準</div>
+      <div id="calib-instructions">拖動圓形對準旋鈕位置<br>調整大小直到吻合後確認</div>
+
+      <!-- Direction pad -->
+      <div id="calib-dir-grid">
+        <div></div>
+        <button class="calib-dir-btn" data-dx="0"   data-dy="-10">↑</button>
+        <div></div>
+        <button class="calib-dir-btn" data-dx="-10" data-dy="0">←</button>
+        <div id="calib-dir-center">✛</div>
+        <button class="calib-dir-btn" data-dx="10"  data-dy="0">→</button>
+        <div></div>
+        <button class="calib-dir-btn" data-dx="0"   data-dy="10">↓</button>
+        <div></div>
+      </div>
+
+      <!-- Size controls -->
+      <div id="calib-size-row">
+        <button class="calib-adj-btn" id="calib-minus">－</button>
+        <div id="calib-size-display">— px<br>—</div>
+        <button class="calib-adj-btn" id="calib-plus">＋</button>
+      </div>
+
+      <div id="calib-action-row">
+        <button id="calib-confirm">確認</button>
+        <button id="calib-cancel">取消</button>
+      </div>
+    </div>
   </div>
 
 
@@ -348,59 +327,107 @@
   <script src="../js/slider.js"></script>
   <script>
     // ── State ──────────────────────────────────────────────────────────────────
-    let syncMode = false;
-    let acOn = false;
-    let autoOn = false;
-    let recircOn = false;
+    let syncMode = false, acOn = false, autoOn = false, recircOn = false;
     let currentMode = 'face';
     const FAN_MAX = 7;
 
+    // ── Circle size: estimate & calibration ───────────────────────────────────
+    const TARGET_MM     = 45;
+    const CSS_PX_PER_MM = 96 / 25.4;
+
+    function estimateCirclePx() {
+      const dpr       = window.devicePixelRatio || 1;
+      const zoomRatio = window.screen.width / window.innerWidth;
+      return TARGET_MM * CSS_PX_PER_MM * dpr / zoomRatio;
+    }
+
+    let circleDiamPx;
+    let isCalibrated = false;
+
+    {
+      const s = localStorage.getItem('knobSizePx');
+      if (s) { circleDiamPx = parseFloat(s); isCalibrated = true; }
+      else    { circleDiamPx = estimateCirclePx(); }
+    }
+
+    // ── Circle position ────────────────────────────────────────────────────────
+    let cx, cy;
+    {
+      const sx = localStorage.getItem('knobPosX');
+      const sy = localStorage.getItem('knobPosY');
+      cx = sx ? parseFloat(sx) : window.innerWidth  * 0.5;
+      cy = sy ? parseFloat(sy) : window.innerHeight * 0.6;
+    }
+
+    // Ring detection bounds (proportional to calibrated diameter)
+    let RING_MIN_PX = 8  * circleDiamPx / TARGET_MM;
+    let RING_MAX_PX = 25 * circleDiamPx / TARGET_MM;
+
+    // ── Sensing circle DOM ─────────────────────────────────────────────────────
+    const circleEl = document.getElementById('sensing-circle');
+
+    function applyCircleSize(px) {
+      circleDiamPx = px;
+      RING_MIN_PX  = 8  * px / TARGET_MM;
+      RING_MAX_PX  = 25 * px / TARGET_MM;
+      circleEl.style.width  = px + 'px';
+      circleEl.style.height = px + 'px';
+      updateCircleSizeInfo();
+    }
+
+    function applyCirclePos(x, y) {
+      cx = x; cy = y;
+      circleEl.style.left = x + 'px';
+      circleEl.style.top  = y + 'px';
+    }
+
+    function updateCircleSizeInfo() {
+      const el = document.getElementById('circle-size-info');
+      const displayMm = (circleDiamPx / CSS_PX_PER_MM).toFixed(0);
+      if (isCalibrated) {
+        el.textContent = `感應圓 ${TARGET_MM}mm（已校準）`;
+        el.className = 'calibrated';
+      } else {
+        el.textContent = `感應圓 ${TARGET_MM}mm（估算 ${displayMm}mm CSS）`;
+        el.className = '';
+      }
+    }
+
+    // Apply initial size and position
+    applyCircleSize(circleDiamPx);
+    applyCirclePos(cx, cy);
+
     // ── Knobs ──────────────────────────────────────────────────────────────────
     const driverKnob = new TactKnob('#knobDriver', {
-      min: 16, max: 30, value: 22, step: 0.5,
-      label: '', unit: '°C',
+      min: 16, max: 30, value: 22, step: 0.5, label: '', unit: '°C',
       formatValue: v => v.toFixed(1),
-      onChange(val) {
-        if (syncMode) passengerKnob.setValue(val, true);
-        updateStatus();
-      }
+      onChange(val) { if (syncMode) passengerKnob.setValue(val, true); updateStatus(); }
     });
-
     const passengerKnob = new TactKnob('#knobPassenger', {
-      min: 16, max: 30, value: 22, step: 0.5,
-      label: '', unit: '°C',
+      min: 16, max: 30, value: 22, step: 0.5, label: '', unit: '°C',
       formatValue: v => v.toFixed(1),
-      onChange(val) {
-        if (syncMode) driverKnob.setValue(val, true);
-        updateStatus();
-      }
+      onChange(val) { if (syncMode) driverKnob.setValue(val, true); updateStatus(); }
     });
 
     // ── Fan slider ─────────────────────────────────────────────────────────────
     const fanSlider = new TactSlider('#sliderFan', {
-      min: 0, max: FAN_MAX, value: 2, step: 1,
-      label: '',
+      min: 0, max: FAN_MAX, value: 2, step: 1, label: '',
       formatValue: v => v === 0 ? 'OFF' : `${Math.round(v)}`,
       onChange: updateFanDots
     });
-
-    // Build fan dots
     const fanDotsEl = document.getElementById('fanDots');
     for (let i = 1; i <= FAN_MAX; i++) {
       const d = document.createElement('div');
-      d.className = 'fan-dot';
-      d.dataset.step = i;
+      d.className = 'fan-dot'; d.dataset.step = i;
       fanDotsEl.appendChild(d);
     }
-
     function updateFanDots(val) {
-      fanDotsEl.querySelectorAll('.fan-dot').forEach(d => {
-        d.classList.toggle('active', parseInt(d.dataset.step) <= val);
-      });
+      fanDotsEl.querySelectorAll('.fan-dot').forEach(d =>
+        d.classList.toggle('active', parseInt(d.dataset.step) <= val));
     }
     updateFanDots(2);
 
-    // ── Sync button ────────────────────────────────────────────────────────────
+    // ── Sync ──────────────────────────────────────────────────────────────────
     document.getElementById('syncBtn').addEventListener('pointerdown', function(e) {
       e.preventDefault();
       syncMode = !syncMode;
@@ -413,178 +440,234 @@
       btn.addEventListener('pointerdown', function(e) {
         e.preventDefault();
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        currentMode = this.dataset.mode;
-        vibrate(8);
+        this.classList.add('active'); currentMode = this.dataset.mode; vibrate(8);
       });
     });
 
     // ── Toggle buttons ─────────────────────────────────────────────────────────
     document.getElementById('acBtn').addEventListener('pointerdown', function(e) {
-      e.preventDefault();
-      acOn = !acOn;
-      this.classList.toggle('active', acOn);
-      updateStatus();
+      e.preventDefault(); acOn = !acOn; this.classList.toggle('active', acOn); updateStatus();
     });
-
     document.getElementById('autoBtn').addEventListener('pointerdown', function(e) {
-      e.preventDefault();
-      autoOn = !autoOn;
-      this.classList.toggle('active', autoOn);
-      vibrate(8);
+      e.preventDefault(); autoOn = !autoOn; this.classList.toggle('active', autoOn); vibrate(8);
     });
-
     document.getElementById('recirc').addEventListener('pointerdown', function(e) {
-      e.preventDefault();
-      recircOn = !recircOn;
-      this.classList.toggle('active', recircOn);
-      vibrate(8);
+      e.preventDefault(); recircOn = !recircOn; this.classList.toggle('active', recircOn); vibrate(8);
     });
 
-    // ── Status LED update ──────────────────────────────────────────────────────
+    // ── Status LED ────────────────────────────────────────────────────────────
     function updateStatus() {
       const led  = document.getElementById('acLed');
       const text = document.getElementById('acStatusText');
-      if (acOn) {
-        led.className = 'led on';
-        text.textContent = `A/C ${driverKnob.value.toFixed(1)}°`;
-      } else {
-        led.className = 'led';
-        text.textContent = 'OFF';
-      }
+      if (acOn) { led.className = 'led on'; text.textContent = `A/C ${driverKnob.value.toFixed(1)}°`; }
+      else       { led.className = 'led';    text.textContent = 'OFF'; }
     }
 
     // ── Active target selection ───────────────────────────────────────────────
     const zoneStatus = document.getElementById('zone-status');
-    let activeTarget = null; // 'driver' | 'passenger' | 'fan'
+    let activeTarget = null;
 
     function updateZoneStatusPanel() {
-      if (activeTarget === null) {
-        zoneStatus.className   = '';
-        zoneStatus.textContent = '請點選要控制的項目';
-      } else if (activeTarget === 'driver') {
-        zoneStatus.className   = 'active';
-        zoneStatus.textContent = `● 駕駛  ${driverKnob.value.toFixed(1)}°C`;
-      } else if (activeTarget === 'passenger') {
-        zoneStatus.className   = 'active';
-        zoneStatus.textContent = `● 副駕  ${passengerKnob.value.toFixed(1)}°C`;
-      } else if (activeTarget === 'fan') {
-        zoneStatus.className   = 'active';
-        zoneStatus.textContent = `● 風速  ${fanSlider.value} / ${FAN_MAX}`;
+      if (!gesture.active || activeTarget === null) {
+        zoneStatus.className = ''; zoneStatus.textContent = '將旋鈕放在感應圓上'; return;
       }
+      zoneStatus.className = 'active';
+      if      (activeTarget === 'driver')    zoneStatus.textContent = `● 駕駛  ${driverKnob.value.toFixed(1)}°C`;
+      else if (activeTarget === 'passenger') zoneStatus.textContent = `● 副駕  ${passengerKnob.value.toFixed(1)}°C`;
+      else if (activeTarget === 'fan')       zoneStatus.textContent = `● 風速  ${fanSlider.value} / ${FAN_MAX}`;
     }
 
     function setActiveTarget(target) {
+      if (target !== activeTarget) {
+        gesture.accValue    = target === 'driver'    ? driverKnob.value
+                            : target === 'passenger' ? passengerKnob.value : 0;
+        gesture.fanAccValue = target === 'fan' ? fanSlider.value : 0;
+      }
       activeTarget = target;
       document.getElementById('zoneDriver').classList.toggle('target-selected',    target === 'driver');
       document.getElementById('zonePassenger').classList.toggle('target-selected', target === 'passenger');
       document.getElementById('cardFan').classList.toggle('target-selected',       target === 'fan');
-      updateZoneStatusPanel();
-      vibrate(8);
+      updateZoneStatusPanel(); vibrate(8);
     }
 
     document.getElementById('zoneDriver').addEventListener('pointerdown',    () => setActiveTarget('driver'));
     document.getElementById('zonePassenger').addEventListener('pointerdown', () => setActiveTarget('passenger'));
     document.getElementById('cardFan').addEventListener('pointerdown',       () => setActiveTarget('fan'));
 
-    updateZoneStatusPanel();
+    // ── Calibration overlay ───────────────────────────────────────────────────
+    const calibOverlay  = document.getElementById('calibration-overlay');
+    const calibCircleEl = document.getElementById('calib-circle');
+    const calibSizeDisp = document.getElementById('calib-size-display');
+
+    let calibCurrentPx = circleDiamPx;
+    let calibCurrentX  = cx;
+    let calibCurrentY  = cy;
+    let calibAdjTimer  = null;
+
+    function updateCalibDisplay() {
+      const mm = (calibCurrentPx / CSS_PX_PER_MM).toFixed(1);
+      calibSizeDisp.innerHTML = `${Math.round(calibCurrentPx)} px<br>${mm} mm CSS`;
+      calibCircleEl.style.width  = calibCurrentPx + 'px';
+      calibCircleEl.style.height = calibCurrentPx + 'px';
+    }
+
+    function stopAdj() { clearInterval(calibAdjTimer); calibAdjTimer = null; }
+
+    // Size adjust buttons
+    function adjustCalibSize(delta) {
+      calibCurrentPx = Math.max(40, Math.min(600, calibCurrentPx + delta));
+      updateCalibDisplay();
+    }
+    document.getElementById('calib-minus').addEventListener('pointerdown', e => {
+      e.stopPropagation(); adjustCalibSize(-2);
+      calibAdjTimer = setInterval(() => adjustCalibSize(-2), 80);
+    });
+    document.getElementById('calib-plus').addEventListener('pointerdown', e => {
+      e.stopPropagation(); adjustCalibSize(+2);
+      calibAdjTimer = setInterval(() => adjustCalibSize(+2), 80);
+    });
+
+    // Direction buttons (move circle 10px, hold-to-repeat)
+    function moveCalibPos(dx, dy) {
+      calibCurrentX = Math.max(0, Math.min(window.innerWidth,  calibCurrentX + dx));
+      calibCurrentY = Math.max(0, Math.min(window.innerHeight, calibCurrentY + dy));
+      calibCircleEl.style.left = calibCurrentX + 'px';
+      calibCircleEl.style.top  = calibCurrentY + 'px';
+    }
+    document.querySelectorAll('.calib-dir-btn').forEach(btn => {
+      const dx = +btn.dataset.dx, dy = +btn.dataset.dy;
+      btn.addEventListener('pointerdown', e => {
+        e.stopPropagation(); moveCalibPos(dx, dy);
+        calibAdjTimer = setInterval(() => moveCalibPos(dx, dy), 100);
+      });
+    });
+
+    // Stop all repeating adjustments on pointerup anywhere in overlay
+    calibOverlay.addEventListener('pointerup',     stopAdj);
+    calibOverlay.addEventListener('pointercancel', stopAdj);
+
+    // Calibration circle drag
+    let calibDragPid = null, calibDragStartX = 0, calibDragStartY = 0;
+    let calibDragOrigX = 0, calibDragOrigY = 0;
+
+    calibCircleEl.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      calibDragPid    = e.pointerId;
+      calibDragStartX = e.clientX; calibDragStartY = e.clientY;
+      calibDragOrigX  = calibCurrentX; calibDragOrigY = calibCurrentY;
+      calibCircleEl.setPointerCapture(calibDragPid);
+      calibCircleEl.classList.add('dragging');
+    });
+    calibCircleEl.addEventListener('pointermove', e => {
+      if (e.pointerId !== calibDragPid) return;
+      e.stopPropagation();
+      calibCurrentX = Math.max(0, Math.min(window.innerWidth,  calibDragOrigX + e.clientX - calibDragStartX));
+      calibCurrentY = Math.max(0, Math.min(window.innerHeight, calibDragOrigY + e.clientY - calibDragStartY));
+      calibCircleEl.style.left = calibCurrentX + 'px';
+      calibCircleEl.style.top  = calibCurrentY + 'px';
+    });
+    calibCircleEl.addEventListener('pointerup', e => {
+      if (e.pointerId !== calibDragPid) return;
+      e.stopPropagation(); calibDragPid = null;
+      calibCircleEl.classList.remove('dragging');
+    });
+    calibCircleEl.addEventListener('pointercancel', e => {
+      calibDragPid = null; calibCircleEl.classList.remove('dragging');
+    });
+
+    // Open calibration
+    document.getElementById('calib-open-btn').addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      calibCurrentPx = circleDiamPx;
+      calibCurrentX  = cx; calibCurrentY = cy;
+      calibCircleEl.style.left = calibCurrentX + 'px';
+      calibCircleEl.style.top  = calibCurrentY + 'px';
+      updateCalibDisplay();
+      calibOverlay.classList.add('visible');
+    });
+
+    // Confirm: save size + position
+    document.getElementById('calib-confirm').addEventListener('pointerdown', e => {
+      e.stopPropagation(); stopAdj();
+      isCalibrated = true;
+      localStorage.setItem('knobSizePx', calibCurrentPx.toFixed(2));
+      localStorage.setItem('knobPosX',   calibCurrentX.toFixed(2));
+      localStorage.setItem('knobPosY',   calibCurrentY.toFixed(2));
+      applyCircleSize(calibCurrentPx);
+      applyCirclePos(calibCurrentX, calibCurrentY);
+      calibOverlay.classList.remove('visible');
+    });
+
+    // Cancel
+    document.getElementById('calib-cancel').addEventListener('pointerdown', e => {
+      e.stopPropagation(); stopAdj();
+      calibOverlay.classList.remove('visible');
+    });
+
+    // Block underlying gesture events while overlay is open
+    calibOverlay.addEventListener('touchstart', e => e.stopPropagation(), { passive: false });
+    calibOverlay.addEventListener('mousedown',  e => e.stopPropagation());
 
     // ── Gesture log ───────────────────────────────────────────────────────────
     let SENSITIVITY = 2.0;
-
     window.gestureLog = [];
     const LOG_MAX = 500;
-
     function logPush(entry) {
       window.gestureLog.push(entry);
       if (window.gestureLog.length > LOG_MAX) window.gestureLog.shift();
     }
 
     // ── Gesture tracking ──────────────────────────────────────────────────────
-    const INIT_POINTS = 8;
-
-    let gesture = {
-      active: false, pointerId: null,
-      phase: 'collecting', initPoints: [],
-      lastX: 0, lastY: 0, cx: 0, cy: 0,
-      accValue: 0, fanAccValue: 0, startT: 0,
-    };
+    let gesture = { active: false, pointerId: null, lastX: 0, lastY: 0, accValue: 0, fanAccValue: 0, startT: 0 };
 
     function gestureStart(x, y, pid) {
       if (gesture.active) return;
+      if (calibOverlay.classList.contains('visible')) return;
+      const dx = x - cx, dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < RING_MIN_PX || dist > RING_MAX_PX) return;
+
       gesture = {
-        active: true, pointerId: pid,
-        phase: 'collecting', initPoints: [],
-        lastX: x, lastY: y, cx: 0, cy: 0,
-        accValue: 0, fanAccValue: 0, startT: performance.now(),
+        active: true, pointerId: pid, lastX: x, lastY: y,
+        accValue:    activeTarget === 'driver'    ? driverKnob.value
+                   : activeTarget === 'passenger' ? passengerKnob.value : gesture.accValue,
+        fanAccValue: activeTarget === 'fan' ? fanSlider.value : gesture.fanAccValue,
+        startT: performance.now(),
       };
-      logPush({ event: 'start', t: 0, x, y, activeTarget });
+      updateZoneStatusPanel();
+      logPush({ event: 'start', t: 0, x, y, activeTarget, cx: +cx.toFixed(1), cy: +cy.toFixed(1) });
     }
 
     function gestureMove(x, y, pid) {
       if (!gesture.active || pid !== gesture.pointerId) return;
 
-      const vx2 = x - gesture.lastX;
-      const vy2 = y - gesture.lastY;
+      const vx2  = x - gesture.lastX;
+      const vy2  = y - gesture.lastY;
       const dist = Math.sqrt(vx2 * vx2 + vy2 * vy2);
+      gesture.lastX = x; gesture.lastY = y;
+      if (dist < 1 || activeTarget === null) return;
 
-      // ── 收集階段 ─────────────────────────────────────────────────────────
-      if (gesture.phase === 'collecting') {
-        if (dist >= 1) {
-          gesture.initPoints.push({ x, y });
-          gesture.lastX = x;
-          gesture.lastY = y;
-          zoneStatus.className   = '';
-          zoneStatus.textContent = `校準中... (${gesture.initPoints.length}/${INIT_POINTS})`;
-          logPush({ phase: 'collecting', t: +(performance.now() - gesture.startT).toFixed(1), x: +x.toFixed(1), y: +y.toFixed(1) });
-        }
-        if (gesture.initPoints.length >= INIT_POINTS) {
-          let sumX = 0, sumY = 0;
-          for (const p of gesture.initPoints) { sumX += p.x; sumY += p.y; }
-          gesture.cx = sumX / gesture.initPoints.length;
-          gesture.cy = sumY / gesture.initPoints.length;
-          gesture.phase = 'tracking';
-          // 初始化各目標的累積器
-          if (activeTarget === 'driver')    gesture.accValue = driverKnob.value;
-          if (activeTarget === 'passenger') gesture.accValue = passengerKnob.value;
-          if (activeTarget === 'fan')       gesture.fanAccValue = fanSlider.value;
-          updateZoneStatusPanel();
-        }
-        return;
-      }
-
-      // ── 追蹤階段 ─────────────────────────────────────────────────────────
-      if (activeTarget === null) { gesture.lastX = x; gesture.lastY = y; return; }
-
-      gesture.lastX = x;
-      gesture.lastY = y;
-      if (dist < 1) return;
-
-      const vx1   = (x - vx2) - gesture.cx;
-      const vy1   = (y - vy2) - gesture.cy;
+      const vx1   = (x - vx2) - cx;
+      const vy1   = (y - vy2) - cy;
       const cross = vx1 * vy2 - vy1 * vx2;
       const sign  = cross > 0 ? 1 : -1;
 
       if (activeTarget === 'driver' || activeTarget === 'passenger') {
-        const knob      = activeTarget === 'driver' ? driverKnob : passengerKnob;
-        const tempDelta = sign * dist * SENSITIVITY / 100;
-        gesture.accValue = clamp(gesture.accValue + tempDelta, knob.min, knob.max);
+        const knob = activeTarget === 'driver' ? driverKnob : passengerKnob;
+        gesture.accValue = clamp(gesture.accValue + sign * dist * SENSITIVITY / 100, knob.min, knob.max);
         knob.setValue(gesture.accValue);
         updateZoneStatusPanel();
         logPush({
           phase: 'tracking', activeTarget,
           t: +(performance.now() - gesture.startT).toFixed(1),
           x: +x.toFixed(1), y: +y.toFixed(1),
-          cx: +gesture.cx.toFixed(1), cy: +gesture.cy.toFixed(1),
+          cx: +cx.toFixed(1), cy: +cy.toFixed(1),
           dist: +dist.toFixed(2), cross: +cross.toFixed(2),
           tempDelta: +(sign * dist * SENSITIVITY / 100).toFixed(4),
           accValue: +gesture.accValue.toFixed(2),
         });
       } else if (activeTarget === 'fan') {
-        gesture.fanAccValue = clamp(
-          gesture.fanAccValue + sign * dist * SENSITIVITY / 100 * (7 / 14),
-          1, FAN_MAX
-        );
+        gesture.fanAccValue = clamp(gesture.fanAccValue + sign * dist * SENSITIVITY / 100 * (7 / 14), 1, FAN_MAX);
         fanSlider.setValue(Math.round(gesture.fanAccValue));
         updateZoneStatusPanel();
         logPush({
@@ -592,8 +675,7 @@
           t: +(performance.now() - gesture.startT).toFixed(1),
           x: +x.toFixed(1), y: +y.toFixed(1),
           dist: +dist.toFixed(2), cross: +cross.toFixed(2),
-          fanAccValue: +gesture.fanAccValue.toFixed(2),
-          fanValue: fanSlider.value,
+          fanAccValue: +gesture.fanAccValue.toFixed(2), fanValue: fanSlider.value,
         });
       }
     }
@@ -601,93 +683,86 @@
     function gestureEnd(pid) {
       if (!gesture.active || pid !== gesture.pointerId) return;
       logPush({ event: 'end', t: +(performance.now() - gesture.startT).toFixed(1), activeTarget, accValue: +gesture.accValue.toFixed(2) });
-      gesture.active = false;
+      gesture.active = false; gesture.lastX = 0; gesture.lastY = 0;
       updateZoneStatusPanel();
     }
 
-    // Pointer events — touch & stylus only (skip mouse to avoid double-fire on desktop)
+    // Pointer events — touch & stylus
     document.addEventListener('pointerdown',   e => { if (e.pointerType !== 'mouse') gestureStart(e.clientX, e.clientY, e.pointerId); });
     document.addEventListener('pointermove',   e => { if (e.pointerType !== 'mouse') gestureMove (e.clientX, e.clientY, e.pointerId); });
     document.addEventListener('pointerup',     e => { if (e.pointerType !== 'mouse') gestureEnd  (e.pointerId); });
     document.addEventListener('pointercancel', e => { if (e.pointerType !== 'mouse') gestureEnd  (e.pointerId); });
 
-    // Mouse events — desktop testing (separate path to avoid double-fire)
+    // Mouse events — desktop testing
     document.addEventListener('mousedown', e => { if (e.button === 0) gestureStart(e.clientX, e.clientY, 'mouse'); });
     document.addEventListener('mousemove', e => {                      gestureMove (e.clientX, e.clientY, 'mouse'); });
     document.addEventListener('mouseup',   e => { if (e.button === 0) gestureEnd  ('mouse'); });
 
-    // Touch events — Surface / Android finger input
+    // Touch events — Surface / Android
     document.addEventListener('touchstart', e => {
       e.preventDefault();
-      const t = e.touches[0];
-      gestureStart(t.clientX, t.clientY, 'touch');
+      const t = e.touches[0]; gestureStart(t.clientX, t.clientY, 'touch');
     }, { passive: false });
-
     document.addEventListener('touchmove', e => {
       e.preventDefault();
-      const t = e.touches[0];
-      gestureMove(t.clientX, t.clientY, 'touch');
+      const t = e.touches[0]; gestureMove(t.clientX, t.clientY, 'touch');
     }, { passive: false });
-
     document.addEventListener('touchend',    e => gestureEnd('touch'));
     document.addEventListener('touchcancel', e => gestureEnd('touch'));
 
     // ── Sensitivity buttons ───────────────────────────────────────────────────
     function updateSensitivityUI() {
-      document.getElementById('sens-subtitle').textContent = `滑動 100px ≈ ${SENSITIVITY.toFixed(1)}°C`;
-      document.querySelectorAll('.sens-btn').forEach(btn => {
-        btn.classList.toggle('active', parseFloat(btn.dataset.val) === SENSITIVITY);
-      });
+      document.getElementById('sens-subtitle').textContent = `旋轉 100px ≈ ${SENSITIVITY.toFixed(1)}°C`;
+      document.querySelectorAll('.sens-btn').forEach(btn =>
+        btn.classList.toggle('active', parseFloat(btn.dataset.val) === SENSITIVITY));
     }
-
     document.querySelectorAll('.sens-btn').forEach(btn => {
       btn.addEventListener('pointerdown', e => {
         e.stopPropagation();
-        SENSITIVITY = parseFloat(btn.dataset.val);
+        if (btn.dataset.val) SENSITIVITY = parseFloat(btn.dataset.val);
         updateSensitivityUI();
       });
     });
 
-    // ── Export log button ─────────────────────────────────────────────────────
+    // ── Export log ────────────────────────────────────────────────────────────
     document.getElementById('export-log-btn').addEventListener('pointerdown', e => {
       e.stopPropagation();
       const log = window.gestureLog;
-      const moves = log.filter(r => !r.event);
-      const starts = log.filter(r => r.event === 'start').length;
+      const moves    = log.filter(r => !r.event);
+      const starts   = log.filter(r => r.event === 'start').length;
       const posCount = moves.filter(r => r.cross > 0).length;
       const negCount = moves.filter(r => r.cross < 0).length;
-      const dists = moves.map(r => r.dist);
-      const avgDist = dists.length ? (dists.reduce((a, b) => a + b, 0) / dists.length).toFixed(2) : 0;
-      const temps = moves.map(r => r.accValue);
-      const tempMin = temps.length ? Math.min(...temps).toFixed(1) : '—';
-      const tempMax = temps.length ? Math.max(...temps).toFixed(1) : '—';
+      const dists    = moves.map(r => r.dist);
+      const avgDist  = dists.length ? (dists.reduce((a, b) => a + b, 0) / dists.length).toFixed(2) : 0;
+      const temps    = moves.map(r => r.accValue);
+      const tempMin  = temps.length ? Math.min(...temps).toFixed(1) : '—';
+      const tempMax  = temps.length ? Math.max(...temps).toFixed(1) : '—';
       console.log(
         `[TactKnob Log] 總筆數=${log.length}  操作次數=${starts}  平均dist=${avgDist}px` +
         `  cross正=${posCount} 負=${negCount}(${posCount+negCount ? ((posCount/(posCount+negCount))*100).toFixed(0) : 0}%順時針)` +
         `  溫度範圍=${tempMin}~${tempMax}°C`
       );
       const blob = new Blob([JSON.stringify(log, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'tactknob-log.json';
-      a.click();
-      URL.revokeObjectURL(a.href);
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'tactknob-log.json'; a.click(); URL.revokeObjectURL(a.href);
     });
 
     // Prevent panel touches from triggering gesture tracking
     const panel = document.getElementById('sensitivity-panel');
-    panel.addEventListener('touchstart',  e => e.stopPropagation(), { passive: false });
-    panel.addEventListener('mousedown',   e => e.stopPropagation());
+    panel.addEventListener('touchstart', e => e.stopPropagation(), { passive: false });
+    panel.addEventListener('mousedown',  e => e.stopPropagation());
 
+    // ── Init ──────────────────────────────────────────────────────────────────
     updateSensitivityUI();
+    updateZoneStatusPanel();
+    updateCircleSizeInfo();
 
     // ── Simulate ambient temp drift ────────────────────────────────────────────
     let ambientBase = 26;
     setInterval(() => {
       ambientBase += (Math.random() - 0.5) * 0.2;
       ambientBase = Math.max(20, Math.min(35, ambientBase));
-      document.getElementById('ambientTemp').textContent =
-        ambientBase.toFixed(1) + '°C';
+      document.getElementById('ambientTemp').textContent = ambientBase.toFixed(1) + '°C';
     }, 3000);
   </script>
 </body>
